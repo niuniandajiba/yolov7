@@ -6,12 +6,60 @@ sys.path.append('./')  # to run '$ python *.py' files in subdirectories
 
 import torch
 import torch.nn as nn
+from pathlib import Path
+from models.yolo import IDetect
 
 import models
 from models.experimental import attempt_load
 from utils.activations import Hardswish, SiLU
 from utils.general import set_logging, check_img_size
 from utils.torch_utils import select_device
+from utils.torch_utils import select_device
+from utils.proto.pytorch2proto import prepare_model_for_layer_outputs, retrieve_onnx_names
+
+from utils.proto import mmdet_meta_arch_pb2
+from google.protobuf import text_format
+
+def export_prototxt(model, img, file):
+    # Prototxt export for a given ONNX model
+    # prefix = colorstr('Prototxt:')
+    onnx_model_name = str(file.with_suffix('.onnx'))
+
+    for module in model.modules():
+        if isinstance(module, IDetect):
+            anchor_grid = torch.squeeze(module.anchor_grid)
+            break
+    num_heads = anchor_grid.shape[0]
+    matched_names = retrieve_onnx_names(img, model, onnx_model_name)
+    prototxt_name = onnx_model_name.replace('onnx', 'prototxt')
+
+    background_label_id = -1
+    num_classes = model.nc
+    assert len(matched_names) == num_heads; "There must be a matched name for each head"
+    proto_names = [f'{matched_names[i]}' for i in range(num_heads)]
+    yolo_params = []
+    for head_id in range(num_heads):
+        yolo_param = mmdet_meta_arch_pb2.TIDLYoloParams(input=proto_names[head_id],
+                                                        anchor_width=anchor_grid[head_id,:,0],
+                                                        anchor_height=anchor_grid[head_id,:,1])
+        yolo_params.append(yolo_param)
+
+    nms_param = mmdet_meta_arch_pb2.TIDLNmsParam(nms_threshold=0.65, top_k=30000)
+    detection_output_param = mmdet_meta_arch_pb2.TIDLOdPostProc(num_classes=num_classes, share_location=True,
+                                            background_label_id=background_label_id, nms_param=nms_param,
+                                            code_type=mmdet_meta_arch_pb2.CODE_TYPE_YOLO_V5, keep_top_k=300,
+                                            confidence_threshold=0.005)
+
+    yolov5 = mmdet_meta_arch_pb2.TidlYoloOd(name='yolo_v5', output=["detections"],
+                                            in_width=img.shape[3], in_height=img.shape[2],
+                                            yolo_param=yolo_params,
+                                            detection_output_param=detection_output_param,
+                                            )
+    arch = mmdet_meta_arch_pb2.TIDLMetaArch(name='yolo_v5', tidl_yolo=[yolov5])
+
+    with open(prototxt_name, 'wt') as pfile:
+        txt_message = text_format.MessageToString(arch)
+        pfile.write(txt_message)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -30,6 +78,7 @@ if __name__ == '__main__':
     # Load PyTorch model
     device = select_device(opt.device)
     model = attempt_load(opt.weights, map_location=device)  # load FP32 model
+    file = Path(opt.weights)
     labels = model.names
 
     # Checks
@@ -68,31 +117,53 @@ if __name__ == '__main__':
 
         print('\nStarting ONNX export with onnx %s...' % onnx.__version__)
         f = opt.weights.replace('.pt', '.onnx')  # filename
-        torch.onnx.export(model, img, f, verbose=False, opset_version=12, input_names=['images'],
-                          output_names=['classes', 'boxes'] if y is None else ['output'],
-                          dynamic_axes={'images': {0: 'batch', 2: 'height', 3: 'width'},  # size(1,3,640,640)
-                                        'output': {0: 'batch', 2: 'y', 3: 'x'}} if opt.dynamic else None)
+        torch.onnx.export(model, img, f, verbose=False, opset_version=11, input_names=['images'],
+                        #   operator_export_type=OperatorExportTypes.ONNX_FALLTHROUGH,
+                        #   output_names=['classes', 'boxes'] if y is None else [], #'output0', 'output1', 'output2', 'output3'
+                        #   dynamic_axes={'images': {0: 'batch', 2: 'height', 3: 'width'},  # size(1,3,640,640)
+                        #                 'output': {0: 'batch', 2: 'y', 3: 'x'}} if opt.dynamic else None
+                                        )
 
         # Checks
         onnx_model = onnx.load(f)  # load onnx model
-        onnx.checker.check_model(onnx_model)  # check onnx model
+        # node = onnx_model.graph.node
+        # for i in range(len(node)):
+        #     inpname = node[i].input
+        #     oupname = node[i].output
+        #     for j in range(len(inpname)):
+        #         for k in range(len(inpname[j])):
+        #             if '0'<=inpname[j]<='9':
+        #                 break
+        #         if k == len(inpname[j])-1:
+        #             continue
+        #         node[i].input[j] = inpname[j][k:]
+        #     for j in range(len(oupname)):
+        #         for k in range(len(oupname[j])):
+        #             if '0'<=oupname[j]<='9':
+        #                 break
+        #         if k == len(oupname[j])-1:
+        #             continue
+        #         node[i].output[j] = oupname[j][k:]
+        # onnx.checker.check_model(onnx_model)  # check onnx model
+        # onnx.save(onnx_model, f[:-5]+'2.onnx')
         # print(onnx.helper.printable_graph(onnx_model.graph))  # print a human readable model
         print('ONNX export success, saved as %s' % f)
     except Exception as e:
         print('ONNX export failure: %s' % e)
+    # export_prototxt(model, img, file)
 
     # CoreML export
-    try:
-        import coremltools as ct
+    # try:
+    #     import coremltools as ct
 
-        print('\nStarting CoreML export with coremltools %s...' % ct.__version__)
-        # convert model from torchscript and apply pixel scaling as per detect.py
-        model = ct.convert(ts, inputs=[ct.ImageType(name='image', shape=img.shape, scale=1 / 255.0, bias=[0, 0, 0])])
-        f = opt.weights.replace('.pt', '.mlmodel')  # filename
-        model.save(f)
-        print('CoreML export success, saved as %s' % f)
-    except Exception as e:
-        print('CoreML export failure: %s' % e)
+    #     print('\nStarting CoreML export with coremltools %s...' % ct.__version__)
+    #     # convert model from torchscript and apply pixel scaling as per detect.py
+    #     model = ct.convert(ts, inputs=[ct.ImageType(name='image', shape=img.shape, scale=1 / 255.0, bias=[0, 0, 0])])
+    #     f = opt.weights.replace('.pt', '.mlmodel')  # filename
+    #     model.save(f)
+    #     print('CoreML export success, saved as %s' % f)
+    # except Exception as e:
+    #     print('CoreML export failure: %s' % e)
 
     # Finish
     print('\nExport complete (%.2fs). Visualize with https://github.com/lutzroeder/netron.' % (time.time() - t))

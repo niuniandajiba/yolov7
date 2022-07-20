@@ -35,15 +35,16 @@ class MP(nn.Module):
     def forward(self, x):
         return self.m(x)
 
-
 class SP(nn.Module):
     def __init__(self, k=3, s=1):
         super(SP, self).__init__()
-        self.m = nn.MaxPool2d(kernel_size=k, stride=s, padding=k // 2)
+        # self.m = nn.MaxPool2d(kernel_size=k, stride=s, padding=k // 2)
+        assert (k-3)%2==0; "Required Kernel size cannot be implemented with kernel_size of 3"
+        num_3x3_maxpool = 1 + (k-3)//2
+        self.m = nn.Sequential(*num_3x3_maxpool*[nn.MaxPool2d(kernel_size=3, stride=1, padding=1)]) 
 
     def forward(self, x):
         return self.m(x)
-    
     
 class ReOrg(nn.Module):
     def __init__(self):
@@ -102,7 +103,8 @@ class Conv(nn.Module):
         super(Conv, self).__init__()
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p), groups=g, bias=False)
         self.bn = nn.BatchNorm2d(c2)
-        self.act = nn.SiLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        self.act = nn.ReLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # nn.SiLU() inplace=True
 
     def forward(self, x):
         return self.act(self.bn(self.conv(x)))
@@ -258,6 +260,26 @@ class Ghost(nn.Module):
 
 
 ##### cspnet #####
+# class SPP(nn.Module):
+#     # Spatial pyramid pooling layer used in YOLOv3-SPP
+#     def __init__(self, c1, c2, k=(5, 9, 13)):
+#         super().__init__()
+#         c_ = c1 // 2  # hidden channels
+#         self.cv1 = Conv(c1, c_, 1, 1)
+#         self.cv2 = Conv(c_ * (len(k) + 1), c2, 1, 1)
+#         num_3x3_maxpool = []
+#         max_pool_module_list = []
+#         for pool_kernel in k:
+#             assert (pool_kernel-3)%2==0; "Required Kernel size cannot be implemented with kernel_size of 3"
+#             num_3x3_maxpool = 1 + (pool_kernel-3)//2
+#             max_pool_module_list.append(nn.Sequential(*num_3x3_maxpool*[nn.MaxPool2d(kernel_size=3, stride=1, padding=1)]))
+#             #max_pool_module_list[-1] = nn.ModuleList(max_pool_module_list[-1])
+#         self.m = nn.ModuleList(max_pool_module_list)
+
+#     def forward(self, x):
+#         x = self.cv1(x)
+#         return self.cv2(torch.cat([x] + [m(x) for m in self.m], 1))
+
 
 class SPPCSPC(nn.Module):
     # CSP https://github.com/WongKinYiu/CrossStagePartialNetworks
@@ -268,7 +290,15 @@ class SPPCSPC(nn.Module):
         self.cv2 = Conv(c1, c_, 1, 1)
         self.cv3 = Conv(c_, c_, 3, 1)
         self.cv4 = Conv(c_, c_, 1, 1)
-        self.m = nn.ModuleList([nn.MaxPool2d(kernel_size=x, stride=1, padding=x // 2) for x in k])
+        num_3x3_maxpool = []
+        max_pool_module_list = []
+        for pool_kernel in k:
+            assert (pool_kernel-3)%2==0; "Required Kernel size cannot be implemented with kernel_size of 3"
+            num_3x3_maxpool = 1 + (pool_kernel-3)//2
+            max_pool_module_list.append(nn.Sequential(*num_3x3_maxpool*[nn.MaxPool2d(kernel_size=3, stride=1, padding=1)]))
+            #max_pool_module_list[-1] = nn.ModuleList(max_pool_module_list[-1])
+        self.m = nn.ModuleList(max_pool_module_list)
+        # self.m = nn.ModuleList([nn.MaxPool2d(kernel_size=x, stride=1, padding=x // 2) for x in k])
         self.cv5 = Conv(4 * c_, c_, 1, 1)
         self.cv6 = Conv(c_, c_, 3, 1)
         self.cv7 = Conv(2 * c_, c2, 1, 1)
@@ -477,7 +507,8 @@ class RepConv(nn.Module):
 
         padding_11 = autopad(k, p) - k // 2
 
-        self.act = nn.SiLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        self.act = nn.ReLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # nn.SiLU()
 
         if deploy:
             self.rbr_reparam = nn.Conv2d(c1, c2, k, s, autopad(k, p), groups=g, bias=True)
