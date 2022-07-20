@@ -441,7 +441,6 @@ class Model(nn.Module):
             self.stride = m.stride
             self._initialize_biases_bin()  # only run once
             # print('Strides: %s' % m.stride.tolist())
-<<<<<<< HEAD
         if isinstance(m, DetectSlot):
             s = 256
             m.stride = torch.tensor([s / x.shape[-2] for x in self.forward(torch.zeros(1, ch, s, s))])
@@ -449,7 +448,6 @@ class Model(nn.Module):
             # check_anchor_order(m)
             self.stride = m.stride
             # self._initialize_biases_bin()
-=======
         if isinstance(m, IKeypoint):
             s = 256  # 2x min stride
             m.stride = torch.tensor([s / x.shape[-2] for x in self.forward(torch.zeros(1, ch, s, s))])  # forward
@@ -459,7 +457,6 @@ class Model(nn.Module):
             self._initialize_biases_kpt()  # only run once
             # print('Strides: %s' % m.stride.tolist())
 
->>>>>>> 8b72ac7792edc75e21b0133d56890f42af7fd336
         # Init weights, biases
         initialize_weights(self)
         self.info()
