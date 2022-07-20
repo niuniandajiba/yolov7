@@ -233,6 +233,54 @@ class IBin(nn.Module):
         return torch.stack((xv, yv), 2).view((1, 1, ny, nx, 2)).float()
 
 
+class DetectSlot(nn.Module):
+    stride = None
+    export = False
+
+    def __init__(self, nc=2, anchors=(), ch=()):
+        super().__init__()
+        anc = (80, 180)
+        self.nc = nc
+        self.no = nc+8 # number of outputs
+        self.na = 2 # len(anchors)
+        tmp = torch.tensor(anc).float().view(1, -1, 1, 1, 1)
+        self.register_buffer('anchors',tmp)
+        self.m = nn.Conv2d(ch, self.na*self.no, 1)
+
+    def forward(self, x):
+        self.training |= self.export
+        # only 1 layer 64x
+        x = self.m(x)
+        bs, _, ny, nx = x.shape
+        x = x.view(bs, self.na, self.no, ny, nx).permute(0,1,3,4,2).contiguous()
+
+        if not self.training:
+            self.grid = self._make_grid(nx, ny).to(x.device)
+
+            y = x.sigmoid()
+            # y[..., 0:2] 
+            p = (y[..., 0:2] * 2. - 0.5 + self.grid) * self.stride
+            # y[..., 2:6] 
+            ang= y[..., 2:6] * 2. - 1.0
+            # print('ancs:')
+            # print(self.anchors.size())
+            # print('y:')
+            # print(y.size())
+            # print(' \n ')
+            # y[..., 6:7] 
+            leng = (y[..., 6:7] * 2.) ** 2 * self.anchors
+
+            out = torch.cat((p, ang, leng, y[..., 7:]), -1)
+            out = out.view(bs, -1, self.no)
+        
+        return x if self.training else (out, x)
+        
+    @staticmethod
+    def _make_grid(nx=20, ny=20):
+        yv, xv = torch.meshgrid([torch.arange(ny), torch.arange(nx)])
+        return torch.stack((xv, yv), 2).view((1, 1, ny, nx, 2)).float()
+
+
 class Model(nn.Module):
     def __init__(self, cfg='yolor-csp-c.yaml', ch=3, nc=None, anchors=None):  # model, input channels, number of classes
         super(Model, self).__init__()
@@ -292,7 +340,13 @@ class Model(nn.Module):
             self.stride = m.stride
             self._initialize_biases_bin()  # only run once
             # print('Strides: %s' % m.stride.tolist())
-
+        if isinstance(m, DetectSlot):
+            s = 256
+            m.stride = torch.tensor([s / x.shape[-2] for x in self.forward(torch.zeros(1, ch, s, s))])
+            # m.anchors /= m.stride.view(-1, 1, 1)
+            # check_anchor_order(m)
+            self.stride = m.stride
+            # self._initialize_biases_bin()
         # Init weights, biases
         initialize_weights(self)
         self.info()
@@ -496,6 +550,10 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
             c2 = ch[f] // 2
         elif m in [Detect, IDetect, IAuxDetect, IBin]:
             args.append([ch[x] for x in f])
+            if isinstance(args[1], int):  # number of anchors
+                args[1] = [list(range(args[1] * 2))] * len(f)
+        elif m is DetectSlot:
+            args.append(ch[f])
             if isinstance(args[1], int):  # number of anchors
                 args[1] = [list(range(args[1] * 2))] * len(f)
         elif m is ReOrg:
