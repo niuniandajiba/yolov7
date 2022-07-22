@@ -340,11 +340,12 @@ class DetectSlot(nn.Module):
 
     def __init__(self, nc=2, anchors=(), ch=()):
         super().__init__()
-        anc = (80, 180)
+        # anc = (80, 180)
         self.nc = nc
+        self.nl = len(anchors)
         self.no = nc+8 # number of outputs
         self.na = 2 # len(anchors)
-        tmp = torch.tensor(anc).float().view(1, -1, 1, 1, 1)
+        tmp = torch.tensor(anchors).float().view(1, -1, 1, 1, 1)
         self.register_buffer('anchors',tmp)
         self.m = nn.Conv2d(ch, self.na*self.no, 1)
 
@@ -369,7 +370,7 @@ class DetectSlot(nn.Module):
             # print(y.size())
             # print(' \n ')
             # y[..., 6:7] 
-            leng = (y[..., 6:7] * 2.) ** 2 * self.anchors
+            leng = (y[..., 6:7] + 0.5) * self.anchors
 
             out = torch.cat((p, ang, leng, y[..., 7:]), -1)
             out = out.view(bs, -1, self.no)
