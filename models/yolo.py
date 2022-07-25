@@ -345,17 +345,22 @@ class DetectSlot(nn.Module):
         self.nl = len(anchors)
         self.no = nc+8 # number of outputs
         self.na = 2 # len(anchors)
-        tmp = torch.tensor(anchors).float().view(1, -1, 1, 1, 1)
-        self.register_buffer('anchors',tmp)
+        tmp = torch.tensor(anchors).float().view(self.nl, -1, 1)
+        self.register_buffer('anchors',tmp) #(nl, na, 1)
+        self.register_buffer('anchor_grid', tmp.clone().view(self.nl, 1, -1, 1, 1, 1))
         self.m = nn.Conv2d(ch, self.na*self.no, 1)
 
     def forward(self, x):
         self.training |= self.export
+        outx = []
         # only 1 layer 64x
         x = self.m(x)
         bs, _, ny, nx = x.shape
         x = x.view(bs, self.na, self.no, ny, nx).permute(0,1,3,4,2).contiguous()
-
+        # print('!!!!!!!!!!!!!!!!')
+        # print(x.size())
+        # print('!!!!!!!!!!!!!!!!!')
+        outx.append(x)
         if not self.training:
             self.grid = self._make_grid(nx, ny).to(x.device)
 
@@ -366,16 +371,21 @@ class DetectSlot(nn.Module):
             ang= y[..., 2:6] * 2. - 1.0
             # print('ancs:')
             # print(self.anchors.size())
+            # print(self.anchors)
+            #torch.Size([1, 2, 1, 1, 1])
+# tensor([[[[[ 96.]]],
+#          [[[216.]]]]])
+            # print(self.nl)=1
             # print('y:')
             # print(y.size())
             # print(' \n ')
             # y[..., 6:7] 
-            leng = (y[..., 6:7] + 0.5) * self.anchors
+            leng = (y[..., 6:7] * 2) * self.anchors_grid
 
             out = torch.cat((p, ang, leng, y[..., 7:]), -1)
             out = out.view(bs, -1, self.no)
         
-        return x if self.training else (out, x)
+        return outx if self.training else (out, x)
         
     @staticmethod
     def _make_grid(nx=20, ny=20):

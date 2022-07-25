@@ -705,8 +705,8 @@ class LoadImagesAndLabelsPS(Dataset):
         self.img_dir = 'images'
         self.root = str(p.parent)
         self.image_resize = (768, 576) #W,H
-        self.image_orisize = (1280, 960) # W.H
-        self.theta_thres = 0.15
+        self.image_orisize = (780, 680) # W.H
+        self.theta_thres = 0.2
         with open(p, 'r') as t:
             self.img_path = t.read().strip().splitlines()
         #     parent = str(p.parent) + os.sep
@@ -748,9 +748,9 @@ class LoadImagesAndLabelsPS(Dataset):
                 sin_theta4 = (p3y-p4y)/leng_3_4
                 # Check |theta3-theta4|<...
                 if (abs(sin_theta3-sin_theta4) > self.theta_thres)|(abs(cos_theta3-cos_theta4) > self.theta_thres):
-                    print('Incorrect slot information!')
-                    print('Filename:'+self.img_path.index)
-                    continue
+                    print('Warning:Incorrect slot information!')
+                    print('Filename:' + str(self.img_path[index]))
+                    print('SlotID:' + str(i))
                 sin_theta2 = (sin_theta3 + sin_theta4)/2
                 cos_theta2 = (cos_theta3 + cos_theta4)/2
 
@@ -762,7 +762,7 @@ class LoadImagesAndLabelsPS(Dataset):
                 p1y *= ratio_h
                 p4y *= ratio_h
                 leng = math.dist((p1x, p1y), (p4x, p4y))
-                pcx, pcy = (p1x+p4x)/2, (p1y+p4y)/2
+                pcx, pcy = (p1x+p4x)/128, (p1y+p4y)/128 # 2*64, 64=stride
                 lbl.append((label, pcx, pcy, cos_theta1, sin_theta1, cos_theta2, sin_theta2, leng))
 
         # TODO: Data Augmentation
@@ -770,13 +770,14 @@ class LoadImagesAndLabelsPS(Dataset):
         
         # Label Array
         nL = len(lbl)
+        # print('nl:', nL)
         lbl = np.array(lbl)
         
         # img_id, cls, pcx, pcy, cos1, sin1, cos2, sin2, leng
         labels_out = torch.zeros((nL, 9))
         if nL:
             labels_out[:, 1:] = torch.from_numpy(lbl) 
-
+        
         # Convert
         img = img[:, :, ::-1].transpose(2, 0, 1) # BGR->RGB, HWC->CHW
         img = np.ascontiguousarray(img)

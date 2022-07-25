@@ -1,8 +1,8 @@
-path: /yolov7/dataset/ps_780680
-train: /yolov7/dataset/ps_780680/train.txt
-# val: /jiliod/val_images.txt
+path: /jiliod
+train: /jiliod/train_images.txt
+val: /jiliod/val_images.txt
 # test:  TODO 
 
 # number of classes
 nc: 2
-names: [ 'slot',  'engaged' ]
+names: [ 'Person',  'Bike' ]

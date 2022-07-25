@@ -96,7 +96,7 @@ def train(hyp, opt, device, tb_writer=None):
     with torch_distributed_zero_first(rank):
         check_dataset(data_dict)  # check
     train_path = data_dict['train']
-    test_path = data_dict['val']
+    # test_path = data_dict['val']
 
     # Freeze
     freeze = []  # parameter names to freeze (full or partial)
@@ -252,10 +252,10 @@ def train(hyp, opt, device, tb_writer=None):
 
     # Process 0
     if rank in [-1, 0]:
-        testloader = create_PSdataloader(test_path, imgsz_test, batch_size * 2, gs, opt,  # testloader
-                                       hyp=hyp, cache=opt.cache_images and not opt.notest, rect=True, rank=-1,
-                                       world_size=opt.world_size, workers=opt.workers,
-                                       pad=0.5, prefix=colorstr('val: '))[0]
+        # testloader = create_PSdataloader(test_path, imgsz_test, batch_size * 2, gs, opt,  # testloader
+        #                                hyp=hyp, cache=opt.cache_images and not opt.notest, rect=True, rank=-1,
+        #                                world_size=opt.world_size, workers=opt.workers,
+        #                                pad=0.5, prefix=colorstr('val: '))[0]
 
         if not opt.resume:
             # labels = np.concatenate(dataset.labels, 0)
@@ -279,14 +279,14 @@ def train(hyp, opt, device, tb_writer=None):
                     find_unused_parameters=any(isinstance(layer, nn.MultiheadAttention) for layer in model.modules()))
 
     # Model parameters
-    hyp['box'] *= 3. / nl  # scale to layers
-    hyp['cls'] *= nc / 80. * 3. / nl  # scale to classes and layers
-    hyp['obj'] *= (imgsz / 640) ** 2 * 3. / nl  # scale to image size and layers
+    # hyp['box'] *= 3. / nl  # scale to layers
+    hyp['cls'] *= nc / 80. # * 3. / nl  # scale to classes and layers
+    # hyp['obj'] *= (imgsz / 640) ** 2 * 3. / nl  # scale to image size and layers
     hyp['label_smoothing'] = opt.label_smoothing
     model.nc = nc  # attach number of classes to model
     model.hyp = hyp  # attach hyperparameters to model
     model.gr = 1.0  # iou loss ratio (obj_loss = 1.0 or iou)
-    model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device) * nc  # attach class weights
+    # model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device) * nc  # attach class weights
     model.names = names
 
     # Start training
@@ -329,7 +329,7 @@ def train(hyp, opt, device, tb_writer=None):
         if rank != -1:
             dataloader.sampler.set_epoch(epoch)
         pbar = enumerate(dataloader)
-        logger.info(('\n' + '%10s' * 8) % ('Epoch', 'gpu_mem', 'obj', 'cls', 'xy', 'ang', 'len', 'total', 'labels', 'img_size'))
+        logger.info(('\n' + '%10s' * 10) % ('Epoch', 'gpu_mem', 'obj', 'cls', 'xy', 'ang', 'len', 'total', 'labels', 'img_size'))
         if rank in [-1, 0]:
             pbar = tqdm(pbar, total=nb)  # progress bar
         optimizer.zero_grad()
@@ -359,7 +359,8 @@ def train(hyp, opt, device, tb_writer=None):
             # Forward
             with amp.autocast(enabled=cuda):
                 pred = model(imgs)  # forward
-                loss, loss_items = compute_loss(pred, targets.to(device), imgs)  # loss scaled by batch_size
+                # print(targets.size())
+                loss, loss_items = compute_loss(pred, targets.to(device))  # loss scaled by batch_size
                 if rank != -1:
                     loss *= opt.world_size  # gradient averaged between devices in DDP mode
                 if opt.quad:
@@ -380,7 +381,7 @@ def train(hyp, opt, device, tb_writer=None):
             if rank in [-1, 0]:
                 mloss = (mloss * i + loss_items) / (i + 1)  # update mean losses
                 mem = '%.3gG' % (torch.cuda.memory_reserved() / 1E9 if torch.cuda.is_available() else 0)  # (GB)
-                s = ('%10s' * 2 + '%10.4g' * 6) % (
+                s = ('%10s' * 2 + '%10.4g' * 8) % (
                     '%g/%g' % (epoch, epochs - 1), mem, *mloss, targets.shape[0], imgs.shape[-1])
                 pbar.set_description(s)
 
@@ -449,7 +450,7 @@ def train(hyp, opt, device, tb_writer=None):
             if (not opt.nosave) or (final_epoch and not opt.evolve):  # if save
                 ckpt = {'epoch': epoch,
                         'best_fitness': best_fitness,
-                        'training_results': results_file.read_text(),
+                        # 'training_results': results_file.read_text(),
                         'model': deepcopy(model.module if is_parallel(model) else model).half(),
                         'ema': deepcopy(ema.ema).half(),
                         'updates': ema.updates,
@@ -468,10 +469,10 @@ def train(hyp, opt, device, tb_writer=None):
                     torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
                 elif epoch >= (epochs-5):
                     torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
-                if wandb_logger.wandb:
-                    if ((epoch + 1) % opt.save_period == 0 and not final_epoch) and opt.save_period != -1:
-                        wandb_logger.log_model(
-                            last.parent, opt, epoch, fi, best_model=best_fitness == fi)
+                # if wandb_logger.wandb:
+                #     if ((epoch + 1) % opt.save_period == 0 and not final_epoch) and opt.save_period != -1:
+                #         wandb_logger.log_model(
+                #             last.parent, opt, epoch, fi, best_model=best_fitness == fi)
                 del ckpt
 
         # end epoch ----------------------------------------------------------------------------------------------------
@@ -486,20 +487,20 @@ def train(hyp, opt, device, tb_writer=None):
                                               if (save_dir / f).exists()]})
         # Test best.pt
         logger.info('%g epochs completed in %.3f hours.\n' % (epoch - start_epoch + 1, (time.time() - t0) / 3600))
-        if opt.data.endswith('coco.yaml') and nc == 80:  # if COCO
-            for m in (last, best) if best.exists() else (last):  # speed, mAP tests
-                results, _, _ = test.test(opt.data,
-                                          batch_size=batch_size * 2,
-                                          imgsz=imgsz_test,
-                                          conf_thres=0.001,
-                                          iou_thres=0.7,
-                                          model=attempt_load(m, device).half(),
-                                          single_cls=opt.single_cls,
-                                          dataloader=testloader,
-                                          save_dir=save_dir,
-                                          save_json=True,
-                                          plots=False,
-                                          is_coco=is_coco)
+        # if opt.data.endswith('coco.yaml') and nc == 80:  # if COCO
+        #     for m in (last, best) if best.exists() else (last):  # speed, mAP tests
+        #         results, _, _ = test.test(opt.data,
+        #                                   batch_size=batch_size * 2,
+        #                                   imgsz=imgsz_test,
+        #                                   conf_thres=0.001,
+        #                                   iou_thres=0.7,
+        #                                   model=attempt_load(m, device).half(),
+        #                                   single_cls=opt.single_cls,
+        #                                   dataloader=testloader,
+        #                                   save_dir=save_dir,
+        #                                   save_json=True,
+        #                                   plots=False,
+                                        #   is_coco=is_coco)
 
         # Strip optimizers
         final = best if best.exists() else last  # final model
