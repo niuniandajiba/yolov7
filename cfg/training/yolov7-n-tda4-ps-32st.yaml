@@ -1,7 +1,7 @@
 # parameters
 nc: 2  # number of classes
 depth_multiple: 1.0  # model depth multiple
-width_multiple: 1.0  # layer channel multiple
+width_multiple: 0.5  # layer channel multiple
 
 # anchors
 anchors:
@@ -44,15 +44,6 @@ backbone:
    [-1, 1, Conv, [256, 3, 1, None, 1, nn.ReLU(inplace=True)]],
    [[-1, -2, -3, -4], 1, Concat, [1]],
    [-1, 1, Conv, [512, 1, 1, None, 1, nn.ReLU(inplace=True)]],  # 28
-
-   [-1, 1, MP, []],  # 29-P6/64
-   [-1, 1, Conv, [256, 1, 1, None, 1, nn.ReLU(inplace=True)]],
-   [-2, 1, Conv, [256, 1, 1, None, 1, nn.ReLU(inplace=True)]],
-   [-1, 1, Conv, [256, 3, 1, None, 1, nn.ReLU(inplace=True)]],
-   [-1, 1, Conv, [256, 3, 1, None, 1, nn.ReLU(inplace=True)]],
-   [[-1, -2, -3, -4], 1, Concat, [1]],
-   [-1, 1, Conv, [512, 1, 1, None, 1, nn.ReLU(inplace=True)]],  # 35
-
   ]
 
 # yolov7-tiny head
@@ -65,20 +56,8 @@ head:
    [[-1, -2, -3, -4], 1, Concat, [1]],
    [-1, 1, Conv, [256, 1, 1, None, 1, nn.ReLU(inplace=True)]],
    [[-1, -7], 1, Concat, [1]],
-   [-1, 1, Conv, [256, 1, 1, None, 1, nn.ReLU(inplace=True)]],  # 44
-   
-   [-1, 1, Conv, [128, 1, 1, None, 1, nn.ReLU(inplace=True)]],
-   [-1, 1, nn.Upsample, [None, 2, 'nearest']],
-   [28, 1, Conv, [128, 1, 1, None, 1, nn.ReLU(inplace=True)]], # route backbone P5
-   [[-1, -2], 1, Concat, [1]],
-   
-   [-1, 1, Conv, [64, 1, 1, None, 1, nn.ReLU(inplace=True)]],
-   [-2, 1, Conv, [64, 1, 1, None, 1, nn.ReLU(inplace=True)]],
-   [-1, 1, Conv, [64, 3, 1, None, 1, nn.ReLU(inplace=True)]],
-   [-1, 1, Conv, [64, 3, 1, None, 1, nn.ReLU(inplace=True)]],
-   [[-1, -2, -3, -4], 1, Concat, [1]],
-   [-1, 1, Conv, [128, 1, 1, None, 1, nn.ReLU(inplace=True)]],  # 54
-
+   [-1, 1, Conv, [256, 1, 1, None, 1, nn.ReLU(inplace=True)]],  # 37
+  
    [-1, 1, Conv, [128, 1, 1, None, 1, nn.ReLU(inplace=True)]],
    [-1, 1, nn.Upsample, [None, 2, 'nearest']],
    [21, 1, Conv, [128, 1, 1, None, 1, nn.ReLU(inplace=True)]], # route backbone P4
@@ -89,7 +68,7 @@ head:
    [-1, 1, Conv, [64, 3, 1, None, 1, nn.ReLU(inplace=True)]],
    [-1, 1, Conv, [64, 3, 1, None, 1, nn.ReLU(inplace=True)]],
    [[-1, -2, -3, -4], 1, Concat, [1]],
-   [-1, 1, Conv, [128, 1, 1, None, 1, nn.ReLU(inplace=True)]],  # 64
+   [-1, 1, Conv, [128, 1, 1, None, 1, nn.ReLU(inplace=True)]],  # 47
   
    [-1, 1, Conv, [64, 1, 1, None, 1, nn.ReLU(inplace=True)]],
    [-1, 1, nn.Upsample, [None, 2, 'nearest']],
@@ -101,39 +80,29 @@ head:
    [-1, 1, Conv, [32, 3, 1, None, 1, nn.ReLU(inplace=True)]],
    [-1, 1, Conv, [32, 3, 1, None, 1, nn.ReLU(inplace=True)]],
    [[-1, -2, -3, -4], 1, Concat, [1]],
-   [-1, 1, Conv, [64, 1, 1, None, 1, nn.ReLU(inplace=True)]],  # 74
+   [-1, 1, Conv, [64, 1, 1, None, 1, nn.ReLU(inplace=True)]],  # 57
    
    [-1, 1, Conv, [128, 3, 2, None, 1, nn.ReLU(inplace=True)]],
-   [[-1, 64], 1, Concat, [1]],
-
-   [-1, 1, Conv, [32, 1, 1, None, 1, nn.ReLU(inplace=True)]],
-   [-2, 1, Conv, [32, 1, 1, None, 1, nn.ReLU(inplace=True)]],
-   [-1, 1, Conv, [32, 3, 1, None, 1, nn.ReLU(inplace=True)]],
-   [-1, 1, Conv, [32, 3, 1, None, 1, nn.ReLU(inplace=True)]],
-   [[-1, -2, -3, -4], 1, Concat, [1]],
-   [-1, 1, Conv, [64, 1, 1, None, 1, nn.ReLU(inplace=True)]],  # 82
-   
-   [-1, 1, Conv, [128, 3, 2, None, 1, nn.ReLU(inplace=True)]],
-   [[-1, 54], 1, Concat, [1]],
+   [[-1, 47], 1, Concat, [1]],
    
    [-1, 1, Conv, [64, 1, 1, None, 1, nn.ReLU(inplace=True)]],
    [-2, 1, Conv, [64, 1, 1, None, 1, nn.ReLU(inplace=True)]],
    [-1, 1, Conv, [64, 3, 1, None, 1, nn.ReLU(inplace=True)]],
    [-1, 1, Conv, [64, 3, 1, None, 1, nn.ReLU(inplace=True)]],
    [[-1, -2, -3, -4], 1, Concat, [1]],
-   [-1, 1, Conv, [128, 1, 1, None, 1, nn.ReLU(inplace=True)]],  # 90
+   [-1, 1, Conv, [128, 1, 1, None, 1, nn.ReLU(inplace=True)]],  # 65
    
    [-1, 1, Conv, [256, 3, 2, None, 1, nn.ReLU(inplace=True)]],
-   [[-1, 44], 1, Concat, [1]],
+   [[-1, 37], 1, Concat, [1]],
    
    [-1, 1, Conv, [128, 1, 1, None, 1, nn.ReLU(inplace=True)]],
    [-2, 1, Conv, [128, 1, 1, None, 1, nn.ReLU(inplace=True)]],
    [-1, 1, Conv, [128, 3, 1, None, 1, nn.ReLU(inplace=True)]],
    [-1, 1, Conv, [128, 3, 1, None, 1, nn.ReLU(inplace=True)]],
    [[-1, -2, -3, -4], 1, Concat, [1]],
-   [-1, 1, Conv, [256, 1, 1, None, 1, nn.ReLU(inplace=True)]],  # 98
+   [-1, 1, Conv, [256, 1, 1, None, 1, nn.ReLU(inplace=True)]],  # 73
       
-   [98, 1, Conv, [512, 3, 1, None, 1, nn.ReLU(inplace=True)]],
+   [73, 1, Conv, [512, 3, 1, None, 1, nn.ReLU(inplace=True)]],
 
-   [99, 1, DetectSlot , [nc, anchors]],   # Detect(P6)
+   [74, 1, DetectSlot, [nc, anchors]],   # Detect(P3, P4, P5)
   ]

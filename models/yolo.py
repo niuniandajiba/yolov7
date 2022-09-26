@@ -337,9 +337,10 @@ class IBin(nn.Module):
 class DetectSlot(nn.Module):
     stride = None
     export = False
+    tda4 = False
 
     def __init__(self, nc=2, anchors=(), ch=()):
-        super().__init__()
+        super(DetectSlot, self).__init__()
         # anc = (80, 180)
         self.nc = nc
         self.nl = len(anchors)
@@ -347,7 +348,9 @@ class DetectSlot(nn.Module):
         self.na = 2 # len(anchors)
         tmp = torch.tensor(anchors).float().view(self.nl, -1, 1)
         self.register_buffer('anchors',tmp) #(nl, na, 1)
-        self.register_buffer('anchor_grid', tmp.clone().view(self.nl, 1, -1, 1, 1, 1))
+        self.register_buffer('anchor_grid', tmp.clone().view(self.nl, -1, 1, 1, 1))
+        # self.anchor_grid_copy = tmp.clone().view(self.nl, -1, 1, 1, 1)
+        # print(self.anchor_grid_copy.size())
         self.m = nn.Conv2d(ch, self.na*self.no, 1)
 
     def forward(self, x):
@@ -356,6 +359,26 @@ class DetectSlot(nn.Module):
         # only 1 layer 64x
         x = self.m(x)
         bs, _, ny, nx = x.shape
+        if self.tda4:
+            # bn = nn.BatchNorm2d(20, affine=False, track_running_stats=False)
+            # self.grid = self._make_grid_2(nx, ny).to(x.device)
+            y = x.sigmoid()
+            # y1 = y[:, 0:10, :, :]
+            # y2 = y[:, 10:20, :, :]
+            # # p1 = (y1[:, 0:2, :, :] * torch.full((1, 2, 20, 20), 2.0) + torch.full((1, 2, 20, 20), -0.5) + self.grid) * torch.full((1, 2, 20, 20), 32)
+            # p1 = y1[:, 0:2, :, :] * torch.full((1, 2, 20, 20), 64.0) + self.grid
+            # a1 = y1[:, 2:6, :, :] * torch.full((1, 4, 20, 20), 2.0) + torch.full((1, 4, 20, 20), -1.0)
+            # l1 = (y1[:, 6:7, :, :] * torch.full((1, 1, 20, 20), 192.0))# * self.anchor_grid[:, 0, :, :, :]
+            # # p2 = (y2[:, 0:2, :, :] * torch.full((1, 2, 20, 20), 2.0) + torch.full((1, 2, 20, 20), -0.5) + self.grid) * torch.full((1, 2, 20, 20), 32)
+            # p2 = y2[:, 0:2, :, :] * torch.full((1, 2, 20, 20), 64.0) + self.grid
+            # a2 = y2[:, 2:6, :, :] * torch.full((1, 4, 20, 20), 2.0) + torch.full((1, 4, 20, 20), -1.0)
+            # l2 = (y2[:, 6:7, :, :] * torch.full((1, 1, 20, 20), 448.0))#  * torch.full((1, 1, 20, 20), 2.0)
+            # # out1 = torch.cat((p1, a1, l1, y1[:, 7:10]), dim=1)
+            # # out2 = torch.cat((p2, a2, l2, y2[:, 7:10]), dim=1)
+            # # out = torch.cat((out1, out2), dim=1)
+            # # out = torch.cat((p1, a1, l1, y[:, 7:10], p2, a2, l2, y[:, 17:20]), dim=1)
+            # return p1, a1, l1, y1[:, 7:10], p2, a2, l2, y2[:, 7:10]
+            return y # bn(y)
         x = x.view(bs, self.na, self.no, ny, nx).permute(0,1,3,4,2).contiguous()
         # print('!!!!!!!!!!!!!!!!')
         # print(x.size())
@@ -380,12 +403,69 @@ class DetectSlot(nn.Module):
             # print(y.size())
             # print(' \n ')
             # y[..., 6:7] 
-            leng = (y[..., 6:7] * 2) * self.anchors_grid
+            leng = (y[..., 6:7] * 2.) * self.anchor_grid
+
+            # print(self.anchor_grid.size())
+            # print(p.size())
+            # print(ang.size())
+            # print(leng.size())
+            # print(y.size())
 
             out = torch.cat((p, ang, leng, y[..., 7:]), -1)
             out = out.view(bs, -1, self.no)
         
-        return outx if self.training else (out, x)
+        return outx if self.training else out#(out, x)
+        
+    @staticmethod
+    def _make_grid(nx=20, ny=20):
+        yv, xv = torch.meshgrid([torch.arange(ny), torch.arange(nx)])
+        return torch.stack((xv, yv), 2).view((1, 1, ny, nx, 2)).float()
+
+    @staticmethod
+    def _make_grid_2(nx=20, ny=20):
+        yv, xv = torch.meshgrid([torch.arange(-16, 624, 32), torch.arange(-16, 624, 32)])
+        return torch.stack((xv, yv), 2).view((1, ny, nx, 2)).float().permute(0, 3, 1, 2)
+
+
+class DetectSlot2P(nn.Module):
+    stride = None
+    export = False
+    tda4 = False
+
+    def __init__(self, nc=2, anchors=(), ch=()):
+        super(DetectSlot2P, self).__init__()
+        # anc = (80, 180)
+        self.nc = nc
+        self.nl = 1# len(anchors)
+        self.no = nc+7 # number of outputs
+        self.na = 1 # len(anchors)
+        tmp = torch.tensor(anchors).float().view(self.nl, -1, 1)
+        self.register_buffer('anchors',tmp) #(nl, na, 1)
+        self.register_buffer('anchor_grid', tmp.clone().view(self.nl, -1, 1, 1, 1))
+        # self.anchor_grid_copy = tmp.clone().view(self.nl, -1, 1, 1, 1)
+        # print(self.anchor_grid_copy.size())
+        self.m = nn.Conv2d(ch, self.na*self.no, 1)
+
+    def forward(self, x):
+        self.training |= self.export
+        outx = []
+        x = self.m(x)
+        if self.tda4:
+            return x
+        bs, _, ny, nx = x.shape
+        x = x.view(bs, self.na, self.no, ny, nx).permute(0,1,3,4,2).contiguous()
+        outx.append(x)
+        if not self.training:
+            self.grid = self._make_grid(nx, ny).to(x.device)
+
+            points = (x[..., 0:4] + self.grid) * self.stride
+            y = x[..., 4:].sigmoid()
+            angle = y[..., 0:2] * 2. - 1.0
+
+            out = torch.cat((points, angle, y[..., 2:]), -1)
+            out = out.view(bs, -1, self.no)
+        
+        return outx if self.training else out#(out, x)
         
     @staticmethod
     def _make_grid(nx=20, ny=20):
@@ -651,7 +731,7 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
                  RepResX, RepResXCSPA, RepResXCSPB, RepResXCSPC, 
                  Ghost, GhostCSPA, GhostCSPB, GhostCSPC,
                  SwinTransformerBlock, STCSPA, STCSPB, STCSPC,
-                 SwinTransformer2Block, ST2CSPA, ST2CSPB, ST2CSPC]:
+                 SwinTransformer2Block, ST2CSPA, ST2CSPB, ST2CSPC, C3]:
             c1, c2 = ch[f], args[0]
             if c2 != no:  # if not output
                 c2 = make_divisible(c2 * gw, 8)
@@ -666,7 +746,7 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
                      RepResXCSPA, RepResXCSPB, RepResXCSPC,
                      GhostCSPA, GhostCSPB, GhostCSPC,
                      STCSPA, STCSPB, STCSPC,
-                     ST2CSPA, ST2CSPB, ST2CSPC]:
+                     ST2CSPA, ST2CSPB, ST2CSPC, C3]:
                 args.insert(2, n)  # number of repeats
                 n = 1
         elif m is nn.BatchNorm2d:

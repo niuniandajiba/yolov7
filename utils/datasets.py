@@ -6,6 +6,7 @@ import logging
 import math
 import os
 import random
+from re import M
 import shutil
 import time
 from itertools import repeat
@@ -121,6 +122,34 @@ def create_PSdataloader(path, imgsz, batch_size, stride, opt, hyp=None, augment=
                         collate_fn=LoadImagesAndLabels.collate_fn4 if quad else LoadImagesAndLabelsPS.collate_fn)
     return dataloader, dataset
 
+def create_PSdataloader_p2(path, imgsz, batch_size, stride, opt, hyp=None, augment=False, cache=False, pad=0.0, rect=False,
+                      rank=-1, world_size=1, workers=8, image_weights=False, quad=False, prefix=''):
+    # Make sure only the first process in DDP process the dataset first, and the following others can use the cache
+    with torch_distributed_zero_first(rank):
+        dataset = LoadImagesAndLabelsPS2(path,
+                                    #   augment=augment,  # augment images
+                                      hyp=hyp,  # augmentation hyperparameters
+                                    #   rect=rect,  # rectangular training
+                                    #   cache_images=cache,
+                                    #   single_cls=opt.single_cls,
+                                    #   stride=int(stride),
+                                    #   pad=pad,
+                                    #   image_weights=image_weights,
+                                    #   prefix=prefix)
+        )
+
+    batch_size = min(batch_size, len(dataset))
+    nw = min([os.cpu_count() // world_size, batch_size if batch_size > 1 else 0, workers])  # number of workers
+    sampler = torch.utils.data.distributed.DistributedSampler(dataset) if rank != -1 else None
+    loader = torch.utils.data.DataLoader if image_weights else InfiniteDataLoader
+    # Use torch.utils.data.DataLoader() if dataset.properties will update during training else InfiniteDataLoader()
+    dataloader = loader(dataset,
+                        batch_size=batch_size,
+                        num_workers=nw,
+                        sampler=sampler,
+                        pin_memory=True,
+                        collate_fn=LoadImagesAndLabels.collate_fn4 if quad else LoadImagesAndLabelsPS2.collate_fn)
+    return dataloader, dataset
 
 class InfiniteDataLoader(torch.utils.data.dataloader.DataLoader):
     """ Dataloader that reuses workers
@@ -704,8 +733,10 @@ class LoadImagesAndLabelsPS(Dataset):
         self.lbl_dir = 'labels'
         self.img_dir = 'images'
         self.root = str(p.parent)
-        self.image_resize = (768, 576) #W,H
-        self.image_orisize = (780, 680) # W.H
+        self.image_resize = (640, 640) #W,H
+        self.stride = 32
+        # TODO: Verify Dynamic origin_size
+        # self.image_orisize = (780, 680) # W.H
         self.theta_thres = 0.2
         with open(p, 'r') as t:
             self.img_path = t.read().strip().splitlines()
@@ -720,10 +751,17 @@ class LoadImagesAndLabelsPS(Dataset):
         hyp = self.hyp
         img = cv2.imread(os.path.join(self.root, self.img_dir, \
             self.img_path[index]+self.img_suffix)) # BGR
-        img = cv2.resize(img, self.image_resize) # Image Resize
+        # if img is None:
+        #     print(self.img_path[index])
+        image_size = (img.shape[1], img.shape[0]) # W,H
+        if (img.shape[1]/img.shape[0] < 2.0)&(img.shape[1]/img.shape[0] > 0.5):
+            img = cv2.resize(img, self.image_resize)
+        # img = cv2.resize(img, self.image_resize) # Image Resize
         lbl = []
         with open(os.path.join(self.root, self.lbl_dir, self.img_path[index] + '.txt'), 'r') as f:
             txt_lbl = f.readlines()
+            # image_info = txt_lbl[0].split('\t')[:-1]
+            # image_size = (int(image_info[0]), int(image_info[1]))
             for i in range(1, len(txt_lbl)):
                 txt_label = np.array(txt_lbl[i].split('\t')[:-1]).astype(int)
                 label = txt_label[0]
@@ -753,36 +791,86 @@ class LoadImagesAndLabelsPS(Dataset):
                     print('SlotID:' + str(i))
                 sin_theta2 = (sin_theta3 + sin_theta4)/2
                 cos_theta2 = (cos_theta3 + cos_theta4)/2
+                theta1 = np.arctan2(sin_theta1, cos_theta1)
+                theta2 = np.arctan2(sin_theta2, cos_theta2)
 
                 # Label Resize
-                ratio_w = self.image_resize[0] / self.image_orisize[0]
-                ratio_h = self.image_resize[1] / self.image_orisize[1]
+                ratio_w = self.image_resize[0] / image_size[0]
+                ratio_h = self.image_resize[1] / image_size[1]
                 p1x *= ratio_w
                 p4x *= ratio_w
                 p1y *= ratio_h
                 p4y *= ratio_h
                 leng = math.dist((p1x, p1y), (p4x, p4y))
-                pcx, pcy = (p1x+p4x)/128, (p1y+p4y)/128 # 2*64, 64=stride
-                lbl.append((label, pcx, pcy, cos_theta1, sin_theta1, cos_theta2, sin_theta2, leng))
+                pcx, pcy = (p1x+p4x)/(2*self.stride), (p1y+p4y)/(2*self.stride) # 2*32, 32=stride
+                lbl.append((label, pcx, pcy, cos_theta1, sin_theta1, cos_theta2, sin_theta2, leng, theta1, theta2))
 
         # TODO: Data Augmentation
-        # augment_hsv(img, hgain=hyp['hsv_h'], sgain=hyp['hsv_s'], vgain=hyp['hsv_v'])
-        
+        augment_hsv(img, hgain=hyp['hsv_h'], sgain=hyp['hsv_s'], vgain=hyp['hsv_v'])
+
         # Label Array
         nL = len(lbl)
         # print('nl:', nL)
         lbl = np.array(lbl)
+        size_final = (int(self.image_resize[0]*1.2), int(self.image_resize[1]*1.2))
         
+        # WarpAffine
+        if random.random() < hyp['WarpAffine']:
+            # degree_rand = random.gauss(0, hyp['degrees']/2)
+            degree_rand = random.uniform(-hyp['degrees'], hyp['degrees'])
+            radian_rand = math.radians(degree_rand)
+            M_Affine = cv2.getRotationMatrix2D((self.image_resize[0]/2, self.image_resize[1]/2), degree_rand, 1)
+            M_Affine[0,2] += self.image_resize[0]*0.1
+            M_Affine[1,2] += self.image_resize[1]*0.1
+            img = cv2.warpAffine(img, M_Affine, size_final, flags=cv2.INTER_CUBIC)
+            if nL:
+                # degree_rand = random.uniform(-hyp['degrees'], hyp['degrees'])
+                theta1 = lbl[:, -2] + radian_rand
+                for i in range(len(theta1)):
+                    if theta1[i]>math.pi:
+                        theta1[i] -= math.pi
+                lbl[:, 3] = np.cos(theta1)
+                lbl[:, 4] = np.sin(theta1)
+                theta2 = lbl[:, -1] + radian_rand
+                lbl[:, 5] = np.cos(theta2)
+                lbl[:, 6] = np.sin(theta2)
+                pcxlis = lbl[:, 1]*M_Affine[0, 0] + lbl[:, 2]*M_Affine[0, 1] + M_Affine[0, 2]/self.stride
+                pcylis = lbl[:, 1]*M_Affine[1, 0] + lbl[:, 2]*M_Affine[1, 1] + M_Affine[1, 2]/self.stride
+                lbl[:, 1] = pcxlis
+                lbl[:, 2] = pcylis
+        else:
+            img = cv2.resize(img, size_final)
+            if nL:
+                lbl[:, 1] *= size_final[0]/self.image_resize[0]
+                lbl[:, 2] *= size_final[1]/self.image_resize[1]
+                lbl[:, 7] *= size_final[0]/self.image_resize[0]
+
+        # Flip up-down
+        if random.random() < hyp['flipud']:
+            img = np.flipud(img)
+            if nL:
+                lbl[:, 2] = (size_final[1]/self.stride) - lbl[:, 2]
+                lbl[:, 3] *= -1 # costheta1
+                lbl[:, 6] *= -1 # sintheta2
+
+        # Flip left-right
+        if random.random() < hyp['fliplr']:
+            img = np.fliplr(img)
+            if nL:
+                lbl[:, 1] = (size_final[0]/self.stride) - lbl[:, 1]
+                lbl[:, 3] *= -1 # costheta1
+                lbl[:, 5] *= -1 # costheta2
+
         # img_id, cls, pcx, pcy, cos1, sin1, cos2, sin2, leng
         labels_out = torch.zeros((nL, 9))
         if nL:
-            labels_out[:, 1:] = torch.from_numpy(lbl) 
+            labels_out[:, 1:] = torch.from_numpy(lbl[:, :-2]) 
         
         # Convert
         img = img[:, :, ::-1].transpose(2, 0, 1) # BGR->RGB, HWC->CHW
         img = np.ascontiguousarray(img)
 
-        return torch.from_numpy(img), labels_out, self.img_path[index], (self.image_orisize, self.image_resize, (0, 0))
+        return torch.from_numpy(img), labels_out, self.img_path[index], (image_size, size_final, (0, 0))
 
     @staticmethod
     def collate_fn(batch):
@@ -790,6 +878,135 @@ class LoadImagesAndLabelsPS(Dataset):
         for i, l in enumerate(label):
             l[:, 0] = i  # add target image index for build_targets()
         return torch.stack(img, 0), torch.cat(label, 0), path, shapes
+
+
+class LoadImagesAndLabelsPS2(Dataset):
+    def __init__(self, path, hyp=None):
+        self.path = path
+        self.hyp = hyp
+        p = Path(path)  # os-agnostic
+        self.img_suffix = '.jpg'
+        self.lbl_dir = 'labels'
+        self.img_dir = 'images'
+        self.root = str(p.parent)  # dataset root
+        self.img_resize = (640, 640)
+        self.stride = 32
+        self.theta_thres = 0.2
+        with open(p, 'r') as t:
+            self.img_path = t.read().strip().splitlines()
+
+    def __len__(self):
+        return len(self.img_path)
+    
+    def __getitem__(self, index):
+        hyp = self.hyp
+        # Read image
+        img = cv2.imread(os.path.join(self.root, self.img_dir, \
+            self.img_path[index]+self.img_suffix))
+        image_size = (img.shape[1], img.shape[0]) # (w, h)
+        if (img.shape[1]/img.shape[0] < 2.0)&(img.shape[1]/img.shape[0] > 0.5):
+            img = cv2.resize(img, self.img_resize)
+        lbl = []
+        # Read label
+        with open(os.path.join(self.root, self.lbl_dir, \
+            self.img_path[index]+'.txt'), 'r') as f:
+            txt_lbl = f.readlines()
+            for i in range(1, len(txt_lbl)):
+                txt_label = np.array(txt_lbl[i].split('\t')[:-1]).astype(int)
+                label = txt_label[0]
+                p1x, p1y = txt_label[5], txt_label[6]
+                p2x, p2y = txt_label[7], txt_label[8]
+                p3x, p3y = txt_label[9], txt_label[10]
+                p4x, p4y = txt_label[11], txt_label[12]
+
+                leng_1_2 = np.sqrt((p1x-p2x)**2 + (p1y-p2y)**2)
+                leng_3_4 = np.sqrt((p3x-p4x)**2 + (p3y-p4y)**2)
+                cos_theta1_2 = (p2x-p1x)/leng_1_2
+                sin_theta1_2 = (p2y-p1y)/leng_1_2
+                cos_theta3_4 = (p3x-p4x)/leng_3_4
+                sin_theta3_4 = (p3y-p4y)/leng_3_4
+                if (abs(sin_theta1_2-sin_theta3_4)>self.theta_thres)|(abs(cos_theta1_2-cos_theta3_4)>self.theta_thres):
+                    print('Warning:Incorrect slot information!')
+                    print('Filename:' + str(self.img_path[index]))
+                    print('SlotID:' + str(i))
+                cos_theta = (cos_theta1_2+cos_theta3_4)/2
+                sin_theta = (sin_theta1_2+sin_theta3_4)/2
+                theta = np.arctan2(sin_theta, cos_theta)
+
+                ratio_w = self.img_resize[0]/image_size[0]
+                ratio_h = self.img_resize[1]/image_size[1]
+                p1x, p1y = p1x*ratio_w/self.stride, p1y*ratio_h/self.stride
+                p4x, p4y = p4x*ratio_w/self.stride, p4y*ratio_h/self.stride
+                lbl.append((label, p1x, p1y, p4x, p4y, theta))
+
+        # Augment---------------------------------------
+        nL = len(lbl)
+        lbl = np.array(lbl, dtype=np.float32)
+        augment_hsv(img, hgain=hyp['hsv_h'], sgain=hyp['hsv_s'], vgain=hyp['hsv_v'])
+        # 1. WarpAffine
+        resize_final = (int(self.img_resize[0]*1.2), int(self.img_resize[1]*1.2))
+        if random.random() < hyp['WarpAffine']:
+            degree_rand = random.uniform(-hyp['degrees'], hyp['degrees'])
+            radian_rand = math.radians(degree_rand)
+            M_Affine = cv2.getRotationMatrix2D((self.img_resize[0]/2, self.img_resize[1]/2), degree_rand, 1)
+            M_Affine[0, 2] += self.img_resize[0]*0.1
+            M_Affine[1, 2] += self.img_resize[1]*0.1
+            img = cv2.warpAffine(img, M_Affine, resize_final, flags=cv2.INTER_CUBIC)
+            if nL:
+                lbl[:, 5] += radian_rand
+                p1x = lbl[:, 1]*M_Affine[0, 0] + lbl[:, 2]*M_Affine[0, 1] + M_Affine[0, 2]/self.stride
+                p1y = lbl[:, 1]*M_Affine[1, 0] + lbl[:, 2]*M_Affine[1, 1] + M_Affine[1, 2]/self.stride
+                p4x = lbl[:, 3]*M_Affine[0, 0] + lbl[:, 4]*M_Affine[0, 1] + M_Affine[0, 2]/self.stride
+                p4y = lbl[:, 3]*M_Affine[1, 0] + lbl[:, 4]*M_Affine[1, 1] + M_Affine[1, 2]/self.stride
+                lbl[:, 1] = p1x
+                lbl[:, 2] = p1y
+                lbl[:, 3] = p4x
+                lbl[:, 4] = p4y
+        else:
+            img = cv2.resize(img, resize_final)
+            if nL:
+                lbl[:, 1:5] *= 1.2
+
+        # 2. Flip up-down
+        if random.random() < hyp['flipud']:
+            img = np.flipud(img)
+            if nL:
+                # 翻转后， 点的顺序也要翻转
+                tmp1 = (resize_final[1]/self.stride) - lbl[:, 2]
+                lbl[:, 2] = (resize_final[1]/self.stride) - lbl[:, 4]
+                tmp2 = lbl[:, 1]
+                lbl[:, 1] = lbl[:, 3]
+                lbl[:, 3] = tmp2
+                lbl[:, 4] = tmp1
+                lbl[:, 5] = -lbl[:, 5]
+
+        # 3. Flip left-right
+        if random.random() < hyp['fliplr']:
+            img = np.fliplr(img)
+            if nL:
+                tmp1 = (resize_final[0]/self.stride) - lbl[:, 1]
+                lbl[:, 1] = (resize_final[0]/self.stride) - lbl[:, 3]
+                tmp2 = lbl[:, 2]
+                lbl[:, 2] = lbl[:, 4]
+                lbl[:, 3] = tmp1
+                lbl[:, 4] = tmp2
+                lbl[:, 5] = np.pi - lbl[:, 5] 
+
+        # out
+        labels_out = torch.zeros((nL, 7))
+        if nL:
+            labels_out[:, 1:] = torch.from_numpy(lbl)
+        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, HWC to CHW
+        img = np.ascontiguousarray(img)  # uint8 to float32
+        return torch.from_numpy(img), labels_out, self.img_path[index], (image_size, resize_final, (0, 0))
+
+    @staticmethod
+    def collate_fn(batch):
+        img, label, path, shapes = zip(*batch)  # transposed
+        for i, l in enumerate(label):
+            l[:, 0] = i  # add target image index for build_targets()
+        return torch.stack(img, 0), torch.cat(label, 0), path, shapes
+
 
 # Ancillary functions --------------------------------------------------------------------------------------------------
 def load_image(self, index):

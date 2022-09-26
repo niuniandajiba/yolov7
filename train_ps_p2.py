@@ -25,12 +25,12 @@ import test  # import test.py to get mAP after each epoch
 from models.experimental import attempt_load
 from models.yolo import Model
 from utils.autoanchor import check_anchors
-from utils.datasets import create_PSdataloader
+from utils.datasets import create_PSdataloader_p2
 from utils.general import labels_to_class_weights, increment_path, labels_to_image_weights, init_seeds, \
     fitness, strip_optimizer, get_latest_run, check_dataset, check_file, check_git_status, check_img_size, \
     check_requirements, print_mutation, set_logging, one_cycle, colorstr
 from utils.google_utils import attempt_download
-from utils.loss import ComputeLossPS
+from utils.loss import ComputeLossPSP2
 from utils.plots import plot_images, plot_labels, plot_results, plot_evolution
 from utils.torch_utils import ModelEMA, select_device, intersect_dicts, torch_distributed_zero_first, is_parallel
 from utils.wandb_logging.wandb_utils import WandbLogger, check_wandb_resume
@@ -242,7 +242,7 @@ def train(hyp, opt, device, tb_writer=None):
         logger.info('Using SyncBatchNorm()')
 
     # Trainloader
-    dataloader, dataset = create_PSdataloader(train_path, imgsz, batch_size, gs, opt,
+    dataloader, dataset = create_PSdataloader_p2(train_path, imgsz, batch_size, gs, opt,
                                             hyp=hyp, augment=True, cache=opt.cache_images, rect=opt.rect, rank=rank,
                                             world_size=opt.world_size, workers=opt.workers,
                                             image_weights=opt.image_weights, quad=opt.quad, prefix=colorstr('train: '))
@@ -298,7 +298,7 @@ def train(hyp, opt, device, tb_writer=None):
     scheduler.last_epoch = start_epoch - 1  # do not move
     scaler = amp.GradScaler(enabled=cuda)
     # compute_loss_ota = ComputeLossOTA(model)  # init loss class
-    compute_loss = ComputeLossPS(model)  # init loss class
+    compute_loss = ComputeLossPSP2(model)  # init loss class
     logger.info(f'Image sizes {imgsz} train, {imgsz_test} test\n'
                 f'Using {dataloader.num_workers} dataloader workers\n'
                 f'Logging results to {save_dir}\n'
@@ -325,11 +325,11 @@ def train(hyp, opt, device, tb_writer=None):
         # b = int(random.uniform(0.25 * imgsz, 0.75 * imgsz + gs) // gs * gs)
         # dataset.mosaic_border = [b - imgsz, -b]  # height, width borders
 
-        mloss = torch.zeros(6, device=device)  # mean losses
+        mloss = torch.zeros(5, device=device)  # mean losses
         if rank != -1:
             dataloader.sampler.set_epoch(epoch)
         pbar = enumerate(dataloader)
-        logger.info(('\n' + '%10s' * 10) % ('Epoch', 'gpu_mem', 'obj', 'cls', 'xy', 'ang', 'len', 'total', 'labels', 'img_size'))
+        logger.info(('\n' + '%10s' * 9) % ('Epoch', 'gpu_mem', 'obj', 'cls', 'xy', 'ang', 'total', 'labels', 'img_size'))
         if rank in [-1, 0]:
             pbar = tqdm(pbar, total=nb)  # progress bar
         optimizer.zero_grad()
@@ -382,7 +382,7 @@ def train(hyp, opt, device, tb_writer=None):
             if rank in [-1, 0]:
                 mloss = (mloss * i + loss_items) / (i + 1)  # update mean losses
                 mem = '%.3gG' % (torch.cuda.memory_reserved() / 1E9 if torch.cuda.is_available() else 0)  # (GB)
-                s = ('%10s' * 2 + '%10.4g' * 8) % (
+                s = ('%10s' * 2 + '%10.4g' * 7) % (
                     '%g/%g' % (epoch, epochs - 1), mem, *mloss, targets.shape[0], imgs.shape[-1])
                 pbar.set_description(s)
 

@@ -69,6 +69,7 @@ if __name__ == '__main__':
     parser.add_argument('--dynamic', action='store_true', help='dynamic ONNX axes')
     parser.add_argument('--grid', action='store_true', help='export Detect() layer grid')
     parser.add_argument('--device', default='cpu', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--tda4', action='store_true', help='export TDA4 model')
     opt = parser.parse_args()
     opt.img_size *= 2 if len(opt.img_size) == 1 else 1  # expand
     print(opt)
@@ -99,6 +100,7 @@ if __name__ == '__main__':
         # elif isinstance(m, models.yolo.Detect):
         #     m.forward = m.forward_export  # assign forward (optional)
     model.model[-1].export = not opt.grid  # set Detect() layer grid export
+    model.model[-1].tda4 = opt.tda4  # set Detect() layer grid export
     y = model(img)  # dry run
 
     # TorchScript export

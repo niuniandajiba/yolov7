@@ -1722,6 +1722,7 @@ class ComputeLossPS:
             torch.zeros(1, device=device), torch.zeros(1, device=device), torch.zeros(1, device=device)
         tcls, txy, tang, tlen, indices = self.build_targets(p, targets)
 
+        # print(targets)
         # print(tcls.size())#ok
         # print(tcls)
         # print(txy.size())
@@ -1744,14 +1745,15 @@ class ComputeLossPS:
 
                 # Regression
                 pxy = ps[:, :2].sigmoid() * 2. - 0.5
-                pang = (ps[:, 2:6].sigmoid() * 2. - 1)
+                pang = (ps[:, 2:6].sigmoid() * 2. - 1.)
                 plen = (ps[:, 6:7].sigmoid() * 2.) # * anchors[i]
                 tmplxy = self.SmL1(pxy, txy)
                 lxy += tmplxy
                 # print(tmplxy)
                 # print(txy.size())
                 # print(pxy.size())
-                lang += self.SmL1(pang, tang)
+                tmplang = self.SmL1(pang, tang)
+                lang += tmplang
                 # print(lang)
                 tmpllen = self.SmL1(plen, tlen)
                 llen += tmpllen
@@ -1763,7 +1765,7 @@ class ComputeLossPS:
                 # print(lxy)
                 # print('llen:')
                 # print(llen)
-                tmpobj = tmplxy.detach().type(tobj.dtype) + tmpllen.detach().type(tobj.dtype)
+                tmpobj = tmplxy.detach().type(tobj.dtype) + tmpllen.detach().type(tobj.dtype) + tmplang.detach().type(tobj.dtype)
                 if tmpobj > 1:
                     tmpobj = torch.ones(1, dtype=tmpobj.dtype, device=device)
                 # gr=1.0
@@ -1898,4 +1900,124 @@ class ComputeLossPS:
             tcls.append(c)  # class
 
         return c, (gxy - gij), gtheta, glen, indices
-        # tcls, txy, tang, tlen, indices, anch
+        # return tcls, txy, tang, tlen, indices, anch
+
+
+class ComputeLossPSP2:
+    def __init__(self, model, autobalance=False):
+        super(ComputeLossPSP2, self).__init__()
+        device = next(model.parameters()).device  # get model device
+        h = model.hyp  # hyperparameters
+        
+        BCEcls = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([h['cls_pw']], device=device))
+        BCEobj = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([h['obj_pw']], device=device))
+        SmL1 = nn.SmoothL1Loss()
+        self.cp, self.cn = smooth_BCE(eps=h.get('label_smoothing', 0.0))
+
+        # Focal loss
+        g = h['fl_gamma']  # focal loss gamma
+        if g > 0:
+            BCEcls, BCEobj = FocalLoss(BCEcls, g), FocalLoss(BCEobj, g)
+
+        det = model.module.model[-1] if is_parallel(model) else model.model[-1]  # Detect() module
+
+        self.BCEcls, self.BCEobj, self.SmL1 = BCEcls, BCEobj, SmL1
+        self.gr, self.hyp, self.autobalance = model.gr, h, autobalance
+
+        for k in 'na', 'nc', 'nl', 'anchors':
+            setattr(self, k, getattr(det, k))
+
+    def __call__(self, p, targets):
+        device = targets.device
+        lcls, lobj, lxy, lang = torch.zeros(1, device=device), torch.zeros(1, device=device), \
+            torch.zeros(1, device=device), torch.zeros(1, device=device)
+        tcls, txy1, txy2, tang, indices = self.build_targets(p, targets)
+        for i, pi in enumerate(p):
+            b, a, gj, gi = indices[i]
+            tobj = torch.zeros_like(pi[..., 0], device=device)  # target obj
+            n = b.shape[0]  # number of targets
+            if n:
+                ps = pi[b, a, gj, gi]
+
+                # Regression
+                pxy1 = ps[:, :2]
+                pxy2 = ps[:, 2:4]
+                ptheta = ps[:, 4:6].sigmoid() * 2. - 1.  # -1 to 1
+                tmplxy = self.SmL1(pxy1, txy1) + self.SmL1(pxy2, txy2)
+                lxy += tmplxy
+                tmplang = self.SmL1(ptheta, tang)
+                lang += tmplang
+
+                tmpobj = tmplxy.detach().type(tobj.dtype) + tmplang.detach().type(tobj.dtype)
+                if tmpobj > 1:
+                    tmpobj = torch.ones(1, dtype=tmpobj.dtype, device=device)
+                
+                tobj[b, a, gj, gi] = (1.0 - self.gr) + self.gr * (1-tmpobj)  # giou ratio
+
+                if self.nc > 1:
+                    t = torch.full_like(ps[:, 7:], self.cn, device=device)
+                    t[range(n), tcls] = self.cp
+                    lcls += self.BCEcls(ps[:, 7:], t)  # BCE
+                
+                obji = self.BCEobj(pi[..., 6], tobj)
+                lobj += obji
+
+            lobj *= self.hyp['obj']
+            lcls *= self.hyp['cls']
+            lxy *= self.hyp['box']
+            lang *= self.hyp['ang']
+            bs = tobj.shape[0]  # batch size
+            loss = lobj + lcls + lxy + lang
+            return loss * bs, torch.cat((lobj, lcls, lxy, lang, loss)).detach()
+
+
+    def build_targets(self, p, targets):
+        na, nt = 1, targets.shape[0]
+        tcls, txy1, txy2, tang, indices, anch = [], [], [], [], [], []
+        gain = torch.ones(8, device=targets.device).long()  # normalized to gridspace gain
+        ai = torch.arange(na, device=targets.device).float().view(na, 1).repeat(1, nt)  # same as .repeat_interleave(nt)
+        targets = torch.cat((targets.repeat(na, 1, 1), ai[:, :, None]), 2)  # append anchor indices
+
+        g = 0.5
+        off = torch.tensor([[0, 0], 
+            [1, 0], [0, 1], [-1, 0], [0, -1],
+            ], device=targets.device).float() * g  # overlap offsets
+
+        for i in range(self.nl):
+            t = targets[0]
+            grid_num_wh = torch.tensor(p[i].shape, device=targets.device)[[3, 2]].long()
+            gain[2:6] = torch.tensor(p[i].shape, device=targets.device)[[3, 2, 3, 2]]  # xyxy gain
+            if nt:
+                # print(t.size())
+                gxy1 = t[:, 2:4]  # grid xy
+                gxy2 = t[:, 4:6]
+                gxy = (gxy1 + gxy2) / 2
+                gxi = grid_num_wh - gxy  # inverse
+                j, k = ((gxy % 1. < g) & (gxy > 1.)).T
+                l, m = ((gxi % 1. < g) & (gxi > 1.)).T
+                j = torch.stack((torch.ones_like(j), j, k, l, m))
+                t = t.repeat((5, 1, 1))[j]
+                offsets = (torch.zeros_like(gxy)[None] + off[:, None])[j]
+            else:
+                offsets = 0
+                
+            # Define
+            b, c = t[:, :2].long().T  # image, class
+            gxy1 = t[:, 2:4]  # grid xy
+            gxy2 = t[:, 4:6]
+            gxy = (gxy1 + gxy2) / 2
+            gtheta = t[:, 6:7]
+            gij = (gxy - offsets).long()
+            gi, gj = gij.T  # grid xy indices
+            sintheta = torch.sin(gtheta)
+            costheta = torch.cos(gtheta)
+            gtheta = torch.cat((sintheta, costheta), dim=1)
+
+            a = t[:, 7].long()  # anchor indices
+            indices.append((b, a, gj.clamp_(0, gain[3] - 1), gi.clamp_(0, gain[2] - 1)))  # image, anchor, grid indices
+            # txy1.append(gxy1 - gij)  # box
+            # txy2.append(gxy2 - gij)
+            # tang.append(gtheta)
+            # tcls.append(c)  # class
+
+            return c, (gxy1 - gij), (gxy2 - gij), gtheta, indices
