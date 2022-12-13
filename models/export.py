@@ -70,6 +70,7 @@ if __name__ == '__main__':
     parser.add_argument('--grid', action='store_true', help='export Detect() layer grid')
     parser.add_argument('--device', default='cpu', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--tda4', action='store_true', help='export TDA4 model')
+    parser.add_argument('--opset', type=int, default=11, help='opset_version')
     opt = parser.parse_args()
     opt.img_size *= 2 if len(opt.img_size) == 1 else 1  # expand
     print(opt)
@@ -97,10 +98,13 @@ if __name__ == '__main__':
                 m.act = Hardswish()
             elif isinstance(m.act, nn.SiLU):
                 m.act = SiLU()
+        # if isinstance(m, nn.Upsample):
+        #     m.mode = 'bilinear'
         # elif isinstance(m, models.yolo.Detect):
         #     m.forward = m.forward_export  # assign forward (optional)
     model.model[-1].export = not opt.grid  # set Detect() layer grid export
     model.model[-1].tda4 = opt.tda4  # set Detect() layer grid export
+    # model.model[-1].stride = torch.tensor([32.0]).to(device)
     y = model(img)  # dry run
 
     # TorchScript export
@@ -119,7 +123,7 @@ if __name__ == '__main__':
 
         print('\nStarting ONNX export with onnx %s...' % onnx.__version__)
         f = opt.weights.replace('.pt', '.onnx')  # filename
-        torch.onnx.export(model, img, f, verbose=False, opset_version=11, input_names=['images'],
+        torch.onnx.export(model, img, f, verbose=False, opset_version=opt.opset, input_names=['images'],
                         #   operator_export_type=OperatorExportTypes.ONNX_FALLTHROUGH,
                         #   output_names=['classes', 'boxes'] if y is None else [], #'output0', 'output1', 'output2', 'output3'
                         #   dynamic_axes={'images': {0: 'batch', 2: 'height', 3: 'width'},  # size(1,3,640,640)

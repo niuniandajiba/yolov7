@@ -97,6 +97,21 @@ class Foldcut(nn.Module):
         return x1+x2
 
 
+class DeConv(nn.Module):
+    # same output to upsample
+    def __init__(self, c1, c2, k=2, s=2, p=None, g=1, act=True):
+        super(DeConv, self).__init__()
+        self.conv = nn.ConvTranspose2d(c1, c2, k, s, 0, groups=c1, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = nn.ReLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+
+    def forward(self, x):
+        return self.act(self.bn(self.conv(x)))
+
+    def fuseforward(self, x):
+        return self.act(self.conv(x))
+
+
 class Conv(nn.Module):
     # Standard convolution
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True):  # ch_in, ch_out, kernel, stride, padding, groups
@@ -2103,3 +2118,11 @@ class C3(nn.Module):
 
     def forward(self, x):
         return self.cv3(torch.cat((self.m(self.cv1(x)), self.cv2(x)), dim=1))
+
+
+class inScale(nn.Module):
+    def __init__(self):
+        super().__init__()
+    
+    def forward(self, x):
+        return x/255.0

@@ -1903,6 +1903,351 @@ class ComputeLossPS:
         # return tcls, txy, tang, tlen, indices, anch
 
 
+class ComputeLossPS_QAT:
+    def __init__(self, model, autobalance=False):
+        super(ComputeLossPS_QAT, self).__init__()
+        device = next(model.parameters()).device
+        h = model.hyp
+
+        BCEcls = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([h['cls_pw']], device=device))
+        BCEobj = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([h['obj_pw']], device=device))
+        SmL1 = nn.SmoothL1Loss()
+
+        self.cp, self.cn = smooth_BCE(eps=h.get('label_smoothing', 0.0))
+
+        # Focal loss
+        g = h['fl_gamma']  # focal loss gamma
+        if g > 0:
+            BCEcls, BCEobj = FocalLoss(BCEcls, g), FocalLoss(BCEobj, g)
+
+        det = model.module.model[-1]  # Detect() module
+        # self.balance = {3: [4.0, 1.0, 0.4]}.get(det.nl, [4.0, 1.0, 0.25, 0.06, .02])  # P3-P7
+        #self.balance = {3: [4.0, 1.0, 0.4]}.get(det.nl, [4.0, 1.0, 0.25, 0.1, .05])  # P3-P7
+        #self.balance = {3: [4.0, 1.0, 0.4]}.get(det.nl, [4.0, 1.0, 0.5, 0.4, .1])  # P3-P7
+        # self.ssi = list(det.stride).index(16) if autobalance else 0  # stride 16 index
+        self.BCEcls, self.BCEobj, self.gr, self.hyp, self.autobalance = BCEcls, BCEobj, model.gr, h, autobalance
+        self.SmL1 = SmL1
+        for k in 'na', 'nc', 'nl', 'anchors': #na=2. nc=2, nl=1, ancsize(1,2,1)
+            setattr(self, k, getattr(det, k))
+
+    def __call__(self, p, targets):
+        device = targets.device
+        lcls, lobj, lxy, lang, llen = torch.zeros(1, device=device), torch.zeros(1, device=device), \
+            torch.zeros(1, device=device), torch.zeros(1, device=device), torch.zeros(1, device=device)
+        tcls, txy, tang, tlen, indices = self.build_targets(p, targets)
+
+        # print(targets)
+        # print(tcls.size())#ok
+        # print(tcls)
+        # print(txy.size())
+        # print(txy)
+        # print(tang.size())# ok
+        # print(tlen.size())# ok 
+        # print(tlen)
+        # print(len(indices[0]))# 4
+        # print(indices[0][0].size())# 36
+        # print(indices)# 
+        # print(anchors[0].size())# ok
+
+        for i, pi in enumerate(p):
+            b,a,gj,gi = indices[i]
+            tobj = torch.zeros_like(pi[..., 0], device=device)  # target obj
+
+            n = b.shape[0]  # number of targets
+            if n:
+                ps = pi[b, a, gj, gi]  # prediction subset corresponding to targets
+
+                # Regression
+                pxy = ps[:, :2].sigmoid() * 2. - 0.5
+                pang = (ps[:, 2:6].sigmoid() * 2. - 1.)
+                plen = (ps[:, 6:7].sigmoid() * 2.) # * anchors[i]
+                tmplxy = self.SmL1(pxy, txy)
+                lxy += tmplxy
+                # print(tmplxy)
+                # print(txy.size())
+                # print(pxy.size())
+                tmplang = self.SmL1(pang, tang)
+                lang += tmplang
+                # print(lang)
+                tmpllen = self.SmL1(plen, tlen)
+                llen += tmpllen
+                # print(tmpllen)
+                
+                # print('lang:')
+                # print(lang)
+                # print('lxy:')
+                # print(lxy)
+                # print('llen:')
+                # print(llen)
+                tmpobj = tmplxy.detach().type(tobj.dtype) + tmpllen.detach().type(tobj.dtype) + tmplang.detach().type(tobj.dtype)
+                if tmpobj > 1:
+                    tmpobj = torch.ones(1, dtype=tmpobj.dtype, device=device)
+                # gr=1.0
+                tobj[b, a, gj, gi] = (1.0 - self.gr) + self.gr * (1-tmpobj)
+                
+                if self.nc >1:
+                    t = torch.full_like(ps[:, 8:], self.cn, device=device)
+                    t[range(n), tcls] = self.cp
+                    # print(t)
+                    lcls += self.BCEcls(ps[:, 8:], t)
+
+            obji = self.BCEobj(pi[..., 7], tobj)
+            lobj += obji # * self.balance[i]
+            # if self.autobalance:
+            #     self.balance[i] = self.balance * 0.9999 + 0.0001 / obji.detach().item()
+        
+        # if self.autobalance:
+        #     self.balance = [x / self.balance[self.ssi] for x in self.balance]
+        lobj *= self.hyp['obj']
+        lcls *= self.hyp['cls']
+        lxy *= self.hyp['box']
+        lang *= self.hyp['ang']
+        llen *= self.hyp['len']
+        bs = tobj.shape[0]
+        # TODON
+        loss = lobj + lcls + lxy + lang + llen
+        return loss * bs, torch.cat((lobj, lcls, lxy, lang, llen, loss)).detach()
+
+    def build_targets(self, p, targets):
+        na, nt = self.na, targets.shape[0] # na=2, 
+        tcls, txy, tang, tlen, indices, anch = [], [], [], [], [], []
+        gain = torch.ones(10, device=targets.device).long()
+        ai = torch.arange(na, device=targets.device).float().view(na, 1).repeat(1, nt)
+        targets = torch.cat((targets.repeat(na, 1, 1), ai[:, :, None]), 2)
+
+        g = 0.5
+        off = torch.tensor([[0, 0],
+                            [1, 0], [0, 1], [-1, 0], [0, -1],  # j,k,l,m
+                            # [1, 1], [1, -1], [-1, 1], [-1, -1],  # jk,jm,lk,lm
+                            ], device=targets.device).float() * g  # offsets
+
+        for i in range(self.nl):
+            anchors = self.anchors[i] # (1,2,1)->(2,1)na,1
+            # print(targets)
+            # print(targets.size())
+            t = targets
+            t[:, :, 8] /= anchors
+            # print(t)
+            # print(t.size())
+            # (768,576) 64x stride -> (12, 9)
+            # stride = 64
+            # g = 0.5
+            grid_num_wh = torch.tensor(p[i].shape, device=targets.device)[[3, 2]].long() # [12,9]
+            gain[2:4] = torch.tensor(p[i].shape)[[3, 2]]  # xyxy gain
+
+            # Match targets to anchors
+            # t = targets * gain
+            # print(p.size())
+            # print(grid_num_wh)
+            # t = targets
+            if nt:
+                # print(targets.dtype)# float32
+                # print(targets.size())# [8,9]
+                # targets[:, 2:4] /= stride
+                # targets[:, 2:4] -= 0.5
+                # r = (targets[:, 8:9] / anchors[:, 0])
+                # rbo = ((1-self.hyp['anchor_t'])<r) & ((1+self.hyp['anchor_t'])>r)
+                
+                # print(r)
+                # print(r.size())
+                # print(rbo)
+                # print(rbo.size())
+                # print(targets)
+                # tmp = torch.zeros(nt, 2, 4, 4, dtype=torch.int64)
+                # tmp[:, :, :, 0] = targets[:, 0:1, None]
+                # tmp[:, 0, :, 1] = 0
+                # tmp[:, 1, :, 1] = 1
+                # tmp[:, :, ]
+
+                # print(r)
+                # print(r.size())
+                # print(tmp)
+                # print(tmp.size())
+                # for j in range(nt):
+                #     r = targets[j, 8:9] / anchors[:, 0]
+                #     print(r.size())
+                #     tmp = torch.zeros(2, 4*na, 4, dtype=torch.int64)
+                    
+                #     tmp[0,0] = targets[j,0]
+                # Matches
+                r = t[:, :, 8:9]  # wh ratio
+                j = torch.max(r, 1. / r).max(2)[0] < self.hyp['anchor_t']  # compare
+                # # j = wh_iou(anchors, t[:, 4:6]) > model.hyp['iou_t']  # iou(3,n)=wh_iou(anchors(3,2), gwh(n,2))
+                t = t[j]  # filter
+
+                # print(t)
+                # print(t.size())
+                # # Offsets
+                gxy = t[:, 2:4]  # grid xy
+                gxi = grid_num_wh - gxy  # inverse
+                # print(gxy)
+                # print(gxy.size())
+                # print(gxi)
+                # print(gxi.size())
+                j, k = ((gxy % 1. < g) & (gxy > 1.)).T
+                l, m = ((gxi % 1. < g) & (gxi > 1.)).T
+                j = torch.stack((torch.ones_like(j), j, k, l, m))
+                t = t.repeat((5, 1, 1))[j]
+                # print(t)
+                # print(t.size())
+                offsets = (torch.zeros_like(gxy)[None] + off[:, None])[j]
+            else:
+                t = targets[0]
+                offsets = 0
+
+            
+            # Define
+            b, c = t[:, :2].long().T  # image, class
+            gxy = t[:, 2:4]  # grid xy
+            gtheta = t[:, 4:8]  # 
+            glen = t[:, 8:9]
+            gij = (gxy - offsets).long()
+            gi, gj = gij.T  # grid xy indices
+
+            # Append
+            a = t[:, 9].long()  # anchor indices
+            indices.append((b, a, gj.clamp_(0, gain[3] - 1), gi.clamp_(0, gain[2] - 1)))  # image, anchor, grid indices
+            txy.append((gxy - gij))  # box
+            tang.append(gtheta)
+            tlen.append(glen)
+            anch.append(anchors[a])  # anchors
+            tcls.append(c)  # class
+
+        return c, (gxy - gij), gtheta, glen, indices
+        # return tcls, txy, tang, tlen, indices, anch
+
+
+class ComputeLossPS_Sparse(nn.Module):
+    def __init__(self, model, autobalance=False):
+        super(ComputeLossPS_Sparse, self).__init__()
+        device = next(model.parameters()).device  # get model device
+        h = model.hyp
+        BCEcls = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([h['cls_pw']], device=device))
+        BCEobj = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([h['obj_pw']], device=device))
+        SmL1 = nn.SmoothL1Loss()
+        L1 = nn.L1Loss()
+
+        self.cp, self.cn = smooth_BCE(eps=h.get('label_smoothing', 0.0))
+
+        g = h['fl_gamma']  # focal loss gamma
+        if g > 0:
+            BCEcls, BCEobj = FocalLoss(BCEcls, g), FocalLoss(BCEobj, g)
+
+        det = model.module.model[-1] if is_parallel(model) else model.model[-1]  # Detect() module
+        self.BCEcls, self.BCEobj, self.gr, self.hyp, self.autobalance = BCEcls, BCEobj, model.gr, h, autobalance
+        self.SmL1 = SmL1
+        self.L1 = L1
+        for k in 'na', 'nc', 'nl', 'anchors': #na=2. nc=2, nl=1, ancsize(1,2,1)
+            setattr(self, k, getattr(det, k))
+
+    def __call__(self, p, targets, model):
+        device = targets.device
+        lcls, lobj, lxy, lang, llen = torch.zeros(1, device=device), torch.zeros(1, device=device), \
+            torch.zeros(1, device=device), torch.zeros(1, device=device), torch.zeros(1, device=device)
+        tcls, txy, tang, tlen, indices = self.build_targets(p, targets)
+        l1reg = torch.zeros(1, device=device)
+        
+        for i, pi in enumerate(p):
+            b,a,gj,gi = indices[i]
+            tobj = torch.zeros_like(pi[..., 0], device=device)  # target obj
+
+            n = b.shape[0]  # number of targets
+            if n:
+                ps = pi[b, a, gj, gi]  # prediction subset corresponding to targets
+
+                # Regression
+                pxy = ps[:, :2].sigmoid() * 2. - 0.5
+                pang = (ps[:, 2:6].sigmoid() * 2. - 1.)
+                plen = (ps[:, 6:7].sigmoid() * 2.) # * anchors[i]
+                tmplxy = self.SmL1(pxy, txy)
+                lxy += tmplxy
+                tmplang = self.SmL1(pang, tang)
+                lang += tmplang
+                tmpllen = self.SmL1(plen, tlen)
+                llen += tmpllen
+                tmpobj = tmplxy.detach().type(tobj.dtype) + tmpllen.detach().type(tobj.dtype) + tmplang.detach().type(tobj.dtype)
+                if tmpobj > 1:
+                    tmpobj = torch.ones(1, dtype=tmpobj.dtype, device=device)
+                # gr=1.0
+                tobj[b, a, gj, gi] = (1.0 - self.gr) + self.gr * (1-tmpobj)
+                
+                if self.nc >1:
+                    t = torch.full_like(ps[:, 8:], self.cn, device=device)
+                    t[range(n), tcls] = self.cp
+                    # print(t)
+                    lcls += self.BCEcls(ps[:, 8:], t)
+
+            obji = self.BCEobj(pi[..., 7], tobj)
+            lobj += obji # * self.balance[i]
+
+        lobj *= self.hyp['obj']
+        lcls *= self.hyp['cls']
+        lxy *= self.hyp['box']
+        lang *= self.hyp['ang']
+        llen *= self.hyp['len']
+        bs = tobj.shape[0]
+
+        # add l1 regularization to model
+        for name, param in model.named_parameters():
+            if 'bias' not in name:
+                l1reg += torch.norm(param, 1)
+
+        loss = lobj + lcls + lxy + lang + llen + l1reg
+        return loss*bs, torch.cat((lxy, lang, llen, lobj, lcls, l1reg, loss)).detach()
+
+    def build_targets(self, p, targets):
+        na, nt = self.na, targets.shape[0] # na=2, 
+        tcls, txy, tang, tlen, indices, anch = [], [], [], [], [], []
+        gain = torch.ones(10, device=targets.device).long()
+        ai = torch.arange(na, device=targets.device).float().view(na, 1).repeat(1, nt)
+        targets = torch.cat((targets.repeat(na, 1, 1), ai[:, :, None]), 2)
+
+        g = 0.5
+        off = torch.tensor([[0, 0],
+                            [1, 0], [0, 1], [-1, 0], [0, -1],  # j,k,l,m
+                            # [1, 1], [1, -1], [-1, 1], [-1, -1],  # jk,jm,lk,lm
+                            ], device=targets.device).float() * g  # offsets
+
+        for i in range(self.nl):
+            anchors = self.anchors[i]
+            t = targets
+            t[:, :, 8] /= anchors
+            grid_num_wh = torch.tensor(p[i].shape, device=targets.device)[[3, 2]].long() # [12,9]
+            gain[2:4] = torch.tensor(p[i].shape)[[3, 2]]
+            if nt:
+                r = t[:, :, 8:9]  # wh ratio
+                j = torch.max(r, 1. / r).max(2)[0] < self.hyp['anchor_t']  # compare
+                t = t[j]  # filter
+                gxy = t[:, 2:4]  # grid xy
+                gxi = grid_num_wh - gxy  # inverse
+                j, k = ((gxy % 1. < g) & (gxy > 1.)).T
+                l, m = ((gxi % 1. < g) & (gxi > 1.)).T
+                j = torch.stack((torch.ones_like(j), j, k, l, m))
+                t = t.repeat((5, 1, 1))[j]
+                offsets = (torch.zeros_like(gxy)[None] + off[:, None])[j]
+            else:
+                t = targets[0]
+                offsets = 0
+            
+            b, c = t[:, :2].long().T  # image, class
+            gxy = t[:, 2:4]  # grid xy
+            gtheta = t[:, 4:8]  # 
+            glen = t[:, 8:9]
+            gij = (gxy - offsets).long()
+            gi, gj = gij.T  # grid xy indices
+
+            # Append
+            a = t[:, 9].long()  # anchor indices
+            indices.append((b, a, gj.clamp_(0, gain[3] - 1), gi.clamp_(0, gain[2] - 1)))  # image, anchor, grid indices
+            txy.append((gxy - gij))  # box
+            tang.append(gtheta)
+            tlen.append(glen)
+            anch.append(anchors[a])  # anchors
+            tcls.append(c)  # class
+
+            return c, (gxy - gij), gtheta, glen, indices
+
+
 class ComputeLossPSP2:
     def __init__(self, model, autobalance=False):
         super(ComputeLossPSP2, self).__init__()

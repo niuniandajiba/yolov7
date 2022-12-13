@@ -1,0 +1,8 @@
+path: /opt_disk2/rd22857/dataset/parkingslot_lh/
+train: /opt_disk2/rd22857/dataset/parkingslot_lh/train.txt
+# val: /jiliod/val_images.txt
+# test:  TODO 
+
+# number of classes
+nc: 2
+names: [ 'slot',  'engaged' ]

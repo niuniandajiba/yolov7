@@ -1,6 +1,6 @@
-path: /jiliod
-train: /jiliod/train_images.txt
-val: /jiliod/val_images.txt
+path: /dataset/jili_OD_VOC
+train: /dataset/jili_OD_VOC/train_images.txt
+val: /dataset/jili_OD_VOC/val_images.txt
 # test:  TODO 
 
 # number of classes

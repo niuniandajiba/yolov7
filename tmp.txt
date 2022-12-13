@@ -1,0 +1,1360 @@
+Fusing layers... 
+permute1 was added to layers
+140179883420624:permute_blob1 was added to blobs
+WARNING: CANNOT FOUND blob 140179883420864
+['permute_blob1'] [None]
+140179883379104:sum_blob1 was added to blobs
+140179883378864:sum_blob2 was added to blobs
+140179883376944:sum_blob3 was added to blobs
+140179883368336:sum_blob4 was added to blobs
+140179883366336:sum_blob5 was added to blobs
+140179883366256:sum_blob6 was added to blobs
+140179883368176:sum_blob7 was added to blobs
+140179883367936:sum_blob8 was added to blobs
+140179883367536:sum_blob9 was added to blobs
+140179883367296:sum_blob10 was added to blobs
+140179883366896:sum_blob11 was added to blobs
+140179883366656:sum_blob12 was added to blobs
+140179883366096:sum_blob13 was added to blobs
+140179883365856:sum_blob14 was added to blobs
+140179883365456:sum_blob15 was added to blobs
+140179883365216:sum_blob16 was added to blobs
+140179883364816:sum_blob17 was added to blobs
+140179883364576:sum_blob18 was added to blobs
+140179938722576:sum_blob19 was added to blobs
+140179938724896:sum_blob20 was added to blobs
+140179938724816:sum_blob21 was added to blobs
+140179938725056:sum_blob22 was added to blobs
+140179938724736:sum_blob23 was added to blobs
+140179938724016:sum_blob24 was added to blobs
+140179938723936:sum_blob25 was added to blobs
+140179938725616:sum_blob26 was added to blobs
+140179938725376:sum_blob27 was added to blobs
+140179938724976:sum_blob28 was added to blobs
+140179938724576:sum_blob29 was added to blobs
+140179938724336:sum_blob30 was added to blobs
+140179938723776:sum_blob31 was added to blobs
+140179938723536:sum_blob32 was added to blobs
+140179938723136:sum_blob33 was added to blobs
+140179938722896:sum_blob34 was added to blobs
+140179938625072:sum_blob35 was added to blobs
+140179938625712:sum_blob36 was added to blobs
+140179938624432:sum_blob37 was added to blobs
+140179938625952:sum_blob38 was added to blobs
+140179938627472:sum_blob39 was added to blobs
+140179938625552:sum_blob40 was added to blobs
+140179938624752:sum_blob41 was added to blobs
+140179938626512:sum_blob42 was added to blobs
+140179938624592:sum_blob43 was added to blobs
+140179938626592:sum_blob44 was added to blobs
+140179938582912:sum_blob45 was added to blobs
+140179938583152:sum_blob46 was added to blobs
+140179938585152:sum_blob47 was added to blobs
+140179938584672:sum_blob48 was added to blobs
+140179938586432:sum_blob49 was added to blobs
+140179938584352:sum_blob50 was added to blobs
+140179938585632:sum_blob51 was added to blobs
+140179939039008:sum_blob52 was added to blobs
+140179939039728:sum_blob53 was added to blobs
+140179939039968:sum_blob54 was added to blobs
+140179939040768:sum_blob55 was added to blobs
+140179939039168:sum_blob56 was added to blobs
+140179939038688:sum_blob57 was added to blobs
+140179939040528:sum_blob58 was added to blobs
+140179939038528:sum_blob59 was added to blobs
+140179939040608:sum_blob60 was added to blobs
+140179938989376:sum_blob61 was added to blobs
+140179938988656:sum_blob62 was added to blobs
+140179938991296:sum_blob63 was added to blobs
+140179938988896:sum_blob64 was added to blobs
+140179938990656:sum_blob65 was added to blobs
+140179938989216:sum_blob66 was added to blobs
+140179938990256:sum_blob67 was added to blobs
+140179938934512:sum_blob68 was added to blobs
+140179938932992:sum_blob69 was added to blobs
+140179938931152:sum_blob70 was added to blobs
+140179938934032:sum_blob71 was added to blobs
+140179938932192:sum_blob72 was added to blobs
+140179938933472:sum_blob73 was added to blobs
+140179938868336:sum_blob74 was added to blobs
+140179938867616:sum_blob75 was added to blobs
+140179938868656:sum_blob76 was added to blobs
+140179939458480:sum_blob77 was added to blobs
+140179939456640:sum_blob78 was added to blobs
+140179939456400:sum_blob79 was added to blobs
+140179939455200:sum_blob80 was added to blobs
+140179939046080:sum_blob81 was added to blobs
+140179883404720:sum_blob82 was added to blobs
+140179883404400:sum_blob83 was added to blobs
+140179883404320:sum_blob84 was added to blobs
+140179883404560:sum_blob85 was added to blobs
+140179883404240:sum_blob86 was added to blobs
+140179883402880:sum_blob87 was added to blobs
+140179883402800:sum_blob88 was added to blobs
+140179883404640:sum_blob89 was added to blobs
+140179883404480:sum_blob90 was added to blobs
+140179883404080:sum_blob91 was added to blobs
+140179883403840:sum_blob92 was added to blobs
+140179883403440:sum_blob93 was added to blobs
+140179883403200:sum_blob94 was added to blobs
+140179883402640:sum_blob95 was added to blobs
+140179883402400:sum_blob96 was added to blobs
+140179883402000:sum_blob97 was added to blobs
+140179883401760:sum_blob98 was added to blobs
+140179883377664:sum_blob99 was added to blobs
+140179883404800:sum_blob100 was added to blobs
+ 0.299 global sparsity
+Starting Transform, This will take a while
+140179955308000:blob1 was added to blobs
+torch ops name: {Model(
+  (model): Sequential(
+    (0): Conv(
+      (conv): Conv2d(3, 16, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (1): Conv(
+      (conv): Conv2d(16, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (2): Conv(
+      (conv): Conv2d(32, 16, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (3): Conv(
+      (conv): Conv2d(32, 16, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (4): Conv(
+      (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (5): Conv(
+      (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (6): Concat()
+    (7): Conv(
+      (conv): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (8): MP(
+      (m): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    )
+    (9): Conv(
+      (conv): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (10): Conv(
+      (conv): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (11): Conv(
+      (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (12): Conv(
+      (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (13): Concat()
+    (14): Conv(
+      (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (15): MP(
+      (m): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    )
+    (16): Conv(
+      (conv): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (17): Conv(
+      (conv): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (18): Conv(
+      (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (19): Conv(
+      (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (20): Concat()
+    (21): Conv(
+      (conv): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (22): MP(
+      (m): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    )
+    (23): Conv(
+      (conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (24): Conv(
+      (conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (25): Conv(
+      (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (26): Conv(
+      (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (27): Concat()
+    (28): Conv(
+      (conv): Conv2d(512, 256, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (29): Conv(
+      (conv): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (30): Conv(
+      (conv): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (31): SP(
+      (m): Sequential(
+        (0): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+        (1): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+      )
+    )
+    (32): SP(
+      (m): Sequential(
+        (0): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+        (1): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+        (2): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+        (3): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+      )
+    )
+    (33): SP(
+      (m): Sequential(
+        (0): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+        (1): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+        (2): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+        (3): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+        (4): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+        (5): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+      )
+    )
+    (34): Concat()
+    (35): Conv(
+      (conv): Conv2d(512, 128, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (36): Concat()
+    (37): Conv(
+      (conv): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (38): Conv(
+      (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (39): DeConv(
+      (conv): ConvTranspose2d(64, 64, kernel_size=(2, 2), stride=(2, 2), groups=64)
+      (act): ReLU(inplace=True)
+    )
+    (40): Conv(
+      (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (41): Concat()
+    (42): Conv(
+      (conv): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (43): Conv(
+      (conv): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (44): Conv(
+      (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (45): Conv(
+      (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (46): Concat()
+    (47): Conv(
+      (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (48): Conv(
+      (conv): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (49): DeConv(
+      (conv): ConvTranspose2d(32, 32, kernel_size=(2, 2), stride=(2, 2), groups=32)
+      (act): ReLU(inplace=True)
+    )
+    (50): Conv(
+      (conv): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (51): Concat()
+    (52): Conv(
+      (conv): Conv2d(64, 16, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (53): Conv(
+      (conv): Conv2d(64, 16, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (54): Conv(
+      (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (55): Conv(
+      (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (56): Concat()
+    (57): Conv(
+      (conv): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (58): Conv(
+      (conv): Conv2d(32, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (59): Concat()
+    (60): Conv(
+      (conv): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (61): Conv(
+      (conv): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (62): Conv(
+      (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (63): Conv(
+      (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (64): Concat()
+    (65): Conv(
+      (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (66): Conv(
+      (conv): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (act): ReLU(inplace=True)
+    )
+    (67): DetectSlot(
+      (m): Conv2d(128, 20, kernel_size=(1, 1), stride=(1, 1))
+    )
+  )
+): '', Sequential(
+  (0): Conv(
+    (conv): Conv2d(3, 16, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (1): Conv(
+    (conv): Conv2d(16, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (2): Conv(
+    (conv): Conv2d(32, 16, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (3): Conv(
+    (conv): Conv2d(32, 16, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (4): Conv(
+    (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (5): Conv(
+    (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (6): Concat()
+  (7): Conv(
+    (conv): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (8): MP(
+    (m): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+  )
+  (9): Conv(
+    (conv): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (10): Conv(
+    (conv): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (11): Conv(
+    (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (12): Conv(
+    (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (13): Concat()
+  (14): Conv(
+    (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (15): MP(
+    (m): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+  )
+  (16): Conv(
+    (conv): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (17): Conv(
+    (conv): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (18): Conv(
+    (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (19): Conv(
+    (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (20): Concat()
+  (21): Conv(
+    (conv): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (22): MP(
+    (m): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+  )
+  (23): Conv(
+    (conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (24): Conv(
+    (conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (25): Conv(
+    (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (26): Conv(
+    (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (27): Concat()
+  (28): Conv(
+    (conv): Conv2d(512, 256, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (29): Conv(
+    (conv): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (30): Conv(
+    (conv): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (31): SP(
+    (m): Sequential(
+      (0): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+      (1): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+    )
+  )
+  (32): SP(
+    (m): Sequential(
+      (0): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+      (1): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+      (2): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+      (3): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+    )
+  )
+  (33): SP(
+    (m): Sequential(
+      (0): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+      (1): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+      (2): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+      (3): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+      (4): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+      (5): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+    )
+  )
+  (34): Concat()
+  (35): Conv(
+    (conv): Conv2d(512, 128, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (36): Concat()
+  (37): Conv(
+    (conv): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (38): Conv(
+    (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (39): DeConv(
+    (conv): ConvTranspose2d(64, 64, kernel_size=(2, 2), stride=(2, 2), groups=64)
+    (act): ReLU(inplace=True)
+  )
+  (40): Conv(
+    (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (41): Concat()
+  (42): Conv(
+    (conv): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (43): Conv(
+    (conv): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (44): Conv(
+    (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (45): Conv(
+    (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (46): Concat()
+  (47): Conv(
+    (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (48): Conv(
+    (conv): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (49): DeConv(
+    (conv): ConvTranspose2d(32, 32, kernel_size=(2, 2), stride=(2, 2), groups=32)
+    (act): ReLU(inplace=True)
+  )
+  (50): Conv(
+    (conv): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (51): Concat()
+  (52): Conv(
+    (conv): Conv2d(64, 16, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (53): Conv(
+    (conv): Conv2d(64, 16, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (54): Conv(
+    (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (55): Conv(
+    (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (56): Concat()
+  (57): Conv(
+    (conv): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (58): Conv(
+    (conv): Conv2d(32, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (59): Concat()
+  (60): Conv(
+    (conv): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (61): Conv(
+    (conv): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (62): Conv(
+    (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (63): Conv(
+    (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (64): Concat()
+  (65): Conv(
+    (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (66): Conv(
+    (conv): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (act): ReLU(inplace=True)
+  )
+  (67): DetectSlot(
+    (m): Conv2d(128, 20, kernel_size=(1, 1), stride=(1, 1))
+  )
+): 'model', Conv(
+  (conv): Conv2d(3, 16, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.0', Conv2d(3, 16, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1)): 'model.0.conv', ReLU(inplace=True): 'model.0.act', Conv(
+  (conv): Conv2d(16, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.1', Conv2d(16, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1)): 'model.1.conv', ReLU(inplace=True): 'model.1.act', Conv(
+  (conv): Conv2d(32, 16, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.2', Conv2d(32, 16, kernel_size=(1, 1), stride=(1, 1)): 'model.2.conv', ReLU(inplace=True): 'model.2.act', Conv(
+  (conv): Conv2d(32, 16, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.3', Conv2d(32, 16, kernel_size=(1, 1), stride=(1, 1)): 'model.3.conv', ReLU(inplace=True): 'model.3.act', Conv(
+  (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.4', Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.4.conv', ReLU(inplace=True): 'model.4.act', Conv(
+  (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.5', Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.5.conv', ReLU(inplace=True): 'model.5.act', Concat(): 'model.6', Conv(
+  (conv): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.7', Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1)): 'model.7.conv', ReLU(inplace=True): 'model.7.act', MP(
+  (m): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+): 'model.8', MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False): 'model.8.m', Conv(
+  (conv): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.9', Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1)): 'model.9.conv', ReLU(inplace=True): 'model.9.act', Conv(
+  (conv): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.10', Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1)): 'model.10.conv', ReLU(inplace=True): 'model.10.act', Conv(
+  (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.11', Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.11.conv', ReLU(inplace=True): 'model.11.act', Conv(
+  (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.12', Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.12.conv', ReLU(inplace=True): 'model.12.act', Concat(): 'model.13', Conv(
+  (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.14', Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1)): 'model.14.conv', ReLU(inplace=True): 'model.14.act', MP(
+  (m): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+): 'model.15', MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False): 'model.15.m', Conv(
+  (conv): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.16', Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1)): 'model.16.conv', ReLU(inplace=True): 'model.16.act', Conv(
+  (conv): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.17', Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1)): 'model.17.conv', ReLU(inplace=True): 'model.17.act', Conv(
+  (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.18', Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.18.conv', ReLU(inplace=True): 'model.18.act', Conv(
+  (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.19', Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.19.conv', ReLU(inplace=True): 'model.19.act', Concat(): 'model.20', Conv(
+  (conv): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.21', Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1)): 'model.21.conv', ReLU(inplace=True): 'model.21.act', MP(
+  (m): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+): 'model.22', MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False): 'model.22.m', Conv(
+  (conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.23', Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1)): 'model.23.conv', ReLU(inplace=True): 'model.23.act', Conv(
+  (conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.24', Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1)): 'model.24.conv', ReLU(inplace=True): 'model.24.act', Conv(
+  (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.25', Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.25.conv', ReLU(inplace=True): 'model.25.act', Conv(
+  (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.26', Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.26.conv', ReLU(inplace=True): 'model.26.act', Concat(): 'model.27', Conv(
+  (conv): Conv2d(512, 256, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.28', Conv2d(512, 256, kernel_size=(1, 1), stride=(1, 1)): 'model.28.conv', ReLU(inplace=True): 'model.28.act', Conv(
+  (conv): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.29', Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1)): 'model.29.conv', ReLU(inplace=True): 'model.29.act', Conv(
+  (conv): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.30', Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1)): 'model.30.conv', ReLU(inplace=True): 'model.30.act', SP(
+  (m): Sequential(
+    (0): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+    (1): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+  )
+): 'model.31', Sequential(
+  (0): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+  (1): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+): 'model.31.m', MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False): 'model.31.m.0', SP(
+  (m): Sequential(
+    (0): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+    (1): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+    (2): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+    (3): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+  )
+): 'model.32', Sequential(
+  (0): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+  (1): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+  (2): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+  (3): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+): 'model.32.m', MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False): 'model.32.m.0', SP(
+  (m): Sequential(
+    (0): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+    (1): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+    (2): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+    (3): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+    (4): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+    (5): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+  )
+): 'model.33', Sequential(
+  (0): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+  (1): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+  (2): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+  (3): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+  (4): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+  (5): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
+): 'model.33.m', MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False): 'model.33.m.0', Concat(): 'model.34', Conv(
+  (conv): Conv2d(512, 128, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.35', Conv2d(512, 128, kernel_size=(1, 1), stride=(1, 1)): 'model.35.conv', ReLU(inplace=True): 'model.35.act', Concat(): 'model.36', Conv(
+  (conv): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.37', Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1)): 'model.37.conv', ReLU(inplace=True): 'model.37.act', Conv(
+  (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.38', Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1)): 'model.38.conv', ReLU(inplace=True): 'model.38.act', DeConv(
+  (conv): ConvTranspose2d(64, 64, kernel_size=(2, 2), stride=(2, 2), groups=64)
+  (act): ReLU(inplace=True)
+): 'model.39', ConvTranspose2d(64, 64, kernel_size=(2, 2), stride=(2, 2), groups=64): 'model.39.conv', ReLU(inplace=True): 'model.39.act', Conv(
+  (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.40', Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1)): 'model.40.conv', ReLU(inplace=True): 'model.40.act', Concat(): 'model.41', Conv(
+  (conv): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.42', Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1)): 'model.42.conv', ReLU(inplace=True): 'model.42.act', Conv(
+  (conv): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.43', Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1)): 'model.43.conv', ReLU(inplace=True): 'model.43.act', Conv(
+  (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.44', Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.44.conv', ReLU(inplace=True): 'model.44.act', Conv(
+  (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.45', Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.45.conv', ReLU(inplace=True): 'model.45.act', Concat(): 'model.46', Conv(
+  (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.47', Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1)): 'model.47.conv', ReLU(inplace=True): 'model.47.act', Conv(
+  (conv): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.48', Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1)): 'model.48.conv', ReLU(inplace=True): 'model.48.act', DeConv(
+  (conv): ConvTranspose2d(32, 32, kernel_size=(2, 2), stride=(2, 2), groups=32)
+  (act): ReLU(inplace=True)
+): 'model.49', ConvTranspose2d(32, 32, kernel_size=(2, 2), stride=(2, 2), groups=32): 'model.49.conv', ReLU(inplace=True): 'model.49.act', Conv(
+  (conv): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.50', Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1)): 'model.50.conv', ReLU(inplace=True): 'model.50.act', Concat(): 'model.51', Conv(
+  (conv): Conv2d(64, 16, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.52', Conv2d(64, 16, kernel_size=(1, 1), stride=(1, 1)): 'model.52.conv', ReLU(inplace=True): 'model.52.act', Conv(
+  (conv): Conv2d(64, 16, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.53', Conv2d(64, 16, kernel_size=(1, 1), stride=(1, 1)): 'model.53.conv', ReLU(inplace=True): 'model.53.act', Conv(
+  (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.54', Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.54.conv', ReLU(inplace=True): 'model.54.act', Conv(
+  (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.55', Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.55.conv', ReLU(inplace=True): 'model.55.act', Concat(): 'model.56', Conv(
+  (conv): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.57', Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1)): 'model.57.conv', ReLU(inplace=True): 'model.57.act', Conv(
+  (conv): Conv2d(32, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.58', Conv2d(32, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1)): 'model.58.conv', ReLU(inplace=True): 'model.58.act', Concat(): 'model.59', Conv(
+  (conv): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.60', Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1)): 'model.60.conv', ReLU(inplace=True): 'model.60.act', Conv(
+  (conv): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.61', Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1)): 'model.61.conv', ReLU(inplace=True): 'model.61.act', Conv(
+  (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.62', Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.62.conv', ReLU(inplace=True): 'model.62.act', Conv(
+  (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.63', Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.63.conv', ReLU(inplace=True): 'model.63.act', Concat(): 'model.64', Conv(
+  (conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.65', Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1)): 'model.65.conv', ReLU(inplace=True): 'model.65.act', Conv(
+  (conv): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (act): ReLU(inplace=True)
+): 'model.66', Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)): 'model.66.conv', ReLU(inplace=True): 'model.66.act', DetectSlot(
+  (m): Conv2d(128, 20, kernel_size=(1, 1), stride=(1, 1))
+): 'model.67', Conv2d(128, 20, kernel_size=(1, 1), stride=(1, 1)): 'model.67.m'}
+model.0.conv
+conv:  blob1
+conv1 was added to layers
+140179883377104:conv_blob1 was added to blobs
+['conv_blob1'] ['blob1']
+model.0.act
+relu1 was added to layers
+140179883377024:relu_blob1 was added to blobs
+['relu_blob1'] ['conv_blob1']
+model.1.conv
+conv:  relu_blob1
+conv2 was added to layers
+140179883405040:conv_blob2 was added to blobs
+['conv_blob2'] ['relu_blob1']
+model.1.act
+relu2 was added to layers
+140179883420704:relu_blob2 was added to blobs
+['relu_blob2'] ['conv_blob2']
+model.2.conv
+conv:  relu_blob2
+conv3 was added to layers
+140179883417904:conv_blob3 was added to blobs
+['conv_blob3'] ['relu_blob2']
+model.2.act
+relu3 was added to layers
+140179883418304:relu_blob3 was added to blobs
+['relu_blob3'] ['conv_blob3']
+model.3.conv
+conv:  relu_blob2
+conv4 was added to layers
+140179883418544:conv_blob4 was added to blobs
+['conv_blob4'] ['relu_blob2']
+model.3.act
+relu4 was added to layers
+140179883418864:relu_blob4 was added to blobs
+['relu_blob4'] ['conv_blob4']
+model.4.conv
+conv:  relu_blob4
+conv5 was added to layers
+140179883418144:conv_blob5 was added to blobs
+['conv_blob5'] ['relu_blob4']
+model.4.act
+relu5 was added to layers
+140179883419424:relu_blob5 was added to blobs
+['relu_blob5'] ['conv_blob5']
+model.5.conv
+conv:  relu_blob5
+conv6 was added to layers
+140179883419824:conv_blob6 was added to blobs
+['conv_blob6'] ['relu_blob5']
+model.5.act
+relu6 was added to layers
+140179883419904:relu_blob6 was added to blobs
+['relu_blob6'] ['conv_blob6']
+model.6
+cat1 was added to layers
+140179883420304:cat_blob1 was added to blobs
+['cat_blob1'] ['relu_blob6', 'relu_blob5', 'relu_blob4', 'relu_blob3']
+model.7.conv
+conv:  cat_blob1
+conv7 was added to layers
+140179883420944:conv_blob7 was added to blobs
+['conv_blob7'] ['cat_blob1']
+model.7.act
+relu7 was added to layers
+140179883421184:relu_blob7 was added to blobs
+['relu_blob7'] ['conv_blob7']
+model.8.m
+max_pool1 was added to layers
+140179883421504:max_pool_blob1 was added to blobs
+['max_pool_blob1'] ['relu_blob7']
+ceil False
+model.9.conv
+conv:  max_pool_blob1
+conv8 was added to layers
+140179938746592:conv_blob8 was added to blobs
+['conv_blob8'] ['max_pool_blob1']
+model.9.act
+relu8 was added to layers
+140179938746832:relu_blob8 was added to blobs
+['relu_blob8'] ['conv_blob8']
+model.10.conv
+conv:  max_pool_blob1
+conv9 was added to layers
+140179938747232:conv_blob9 was added to blobs
+['conv_blob9'] ['max_pool_blob1']
+model.10.act
+relu9 was added to layers
+140179938747472:relu_blob9 was added to blobs
+['relu_blob9'] ['conv_blob9']
+model.11.conv
+conv:  relu_blob9
+conv10 was added to layers
+140179938747872:conv_blob10 was added to blobs
+['conv_blob10'] ['relu_blob9']
+model.11.act
+relu10 was added to layers
+140179938748192:relu_blob10 was added to blobs
+['relu_blob10'] ['conv_blob10']
+model.12.conv
+conv:  relu_blob10
+conv11 was added to layers
+140179938748512:conv_blob11 was added to blobs
+['conv_blob11'] ['relu_blob10']
+model.12.act
+relu11 was added to layers
+140179938748832:relu_blob11 was added to blobs
+['relu_blob11'] ['conv_blob11']
+model.13
+cat2 was added to layers
+140179938749152:cat_blob2 was added to blobs
+['cat_blob2'] ['relu_blob11', 'relu_blob10', 'relu_blob9', 'relu_blob8']
+model.14.conv
+conv:  cat_blob2
+conv12 was added to layers
+140179938749312:conv_blob12 was added to blobs
+['conv_blob12'] ['cat_blob2']
+model.14.act
+relu12 was added to layers
+140179938749552:relu_blob12 was added to blobs
+['relu_blob12'] ['conv_blob12']
+model.15.m
+max_pool2 was added to layers
+140179938749872:max_pool_blob2 was added to blobs
+['max_pool_blob2'] ['relu_blob12']
+ceil False
+model.16.conv
+conv:  max_pool_blob2
+conv13 was added to layers
+140179938750192:conv_blob13 was added to blobs
+['conv_blob13'] ['max_pool_blob2']
+model.16.act
+relu13 was added to layers
+140179883470912:relu_blob13 was added to blobs
+['relu_blob13'] ['conv_blob13']
+model.17.conv
+conv:  max_pool_blob2
+conv14 was added to layers
+140179883471312:conv_blob14 was added to blobs
+['conv_blob14'] ['max_pool_blob2']
+model.17.act
+relu14 was added to layers
+140179883471552:relu_blob14 was added to blobs
+['relu_blob14'] ['conv_blob14']
+model.18.conv
+conv:  relu_blob14
+conv15 was added to layers
+140179883471952:conv_blob15 was added to blobs
+['conv_blob15'] ['relu_blob14']
+model.18.act
+relu15 was added to layers
+140179883472272:relu_blob15 was added to blobs
+['relu_blob15'] ['conv_blob15']
+model.19.conv
+conv:  relu_blob15
+conv16 was added to layers
+140179883472592:conv_blob16 was added to blobs
+['conv_blob16'] ['relu_blob15']
+model.19.act
+relu16 was added to layers
+140179883472912:relu_blob16 was added to blobs
+['relu_blob16'] ['conv_blob16']
+model.20
+cat3 was added to layers
+140179883473232:cat_blob3 was added to blobs
+['cat_blob3'] ['relu_blob16', 'relu_blob15', 'relu_blob14', 'relu_blob13']
+model.21.conv
+conv:  cat_blob3
+conv17 was added to layers
+140179883473392:conv_blob17 was added to blobs
+['conv_blob17'] ['cat_blob3']
+model.21.act
+relu17 was added to layers
+140179883473632:relu_blob17 was added to blobs
+['relu_blob17'] ['conv_blob17']
+model.22.m
+max_pool3 was added to layers
+140179883473952:max_pool_blob3 was added to blobs
+['max_pool_blob3'] ['relu_blob17']
+ceil False
+model.23.conv
+conv:  max_pool_blob3
+conv18 was added to layers
+140179883474272:conv_blob18 was added to blobs
+['conv_blob18'] ['max_pool_blob3']
+model.23.act
+relu18 was added to layers
+140179883474512:relu_blob18 was added to blobs
+['relu_blob18'] ['conv_blob18']
+model.24.conv
+conv:  max_pool_blob3
+conv19 was added to layers
+140179883462720:conv_blob19 was added to blobs
+['conv_blob19'] ['max_pool_blob3']
+model.24.act
+relu19 was added to layers
+140179883462960:relu_blob19 was added to blobs
+['relu_blob19'] ['conv_blob19']
+model.25.conv
+conv:  relu_blob19
+conv20 was added to layers
+140179883463360:conv_blob20 was added to blobs
+['conv_blob20'] ['relu_blob19']
+model.25.act
+relu20 was added to layers
+140179883463680:relu_blob20 was added to blobs
+['relu_blob20'] ['conv_blob20']
+model.26.conv
+conv:  relu_blob20
+conv21 was added to layers
+140179883464000:conv_blob21 was added to blobs
+['conv_blob21'] ['relu_blob20']
+model.26.act
+relu21 was added to layers
+140179883464320:relu_blob21 was added to blobs
+['relu_blob21'] ['conv_blob21']
+model.27
+cat4 was added to layers
+140179883464640:cat_blob4 was added to blobs
+['cat_blob4'] ['relu_blob21', 'relu_blob20', 'relu_blob19', 'relu_blob18']
+model.28.conv
+conv:  cat_blob4
+conv22 was added to layers
+140179883464800:conv_blob22 was added to blobs
+['conv_blob22'] ['cat_blob4']
+model.28.act
+relu22 was added to layers
+140179883465040:relu_blob22 was added to blobs
+['relu_blob22'] ['conv_blob22']
+model.29.conv
+conv:  relu_blob22
+conv23 was added to layers
+140179883465360:conv_blob23 was added to blobs
+['conv_blob23'] ['relu_blob22']
+model.29.act
+relu23 was added to layers
+140179883465680:relu_blob23 was added to blobs
+['relu_blob23'] ['conv_blob23']
+model.30.conv
+conv:  relu_blob22
+conv24 was added to layers
+140179883466000:conv_blob24 was added to blobs
+['conv_blob24'] ['relu_blob22']
+model.30.act
+relu24 was added to layers
+140179883466320:relu_blob24 was added to blobs
+['relu_blob24'] ['conv_blob24']
+model.31.m.0
+max_pool4 was added to layers
+140179883487296:max_pool_blob4 was added to blobs
+['max_pool_blob4'] ['relu_blob24']
+ceil False
+model.31.m.0
+max_pool5 was added to layers
+140179883487616:max_pool_blob5 was added to blobs
+['max_pool_blob5'] ['max_pool_blob4']
+ceil False
+model.32.m.0
+max_pool6 was added to layers
+140179883487776:max_pool_blob6 was added to blobs
+['max_pool_blob6'] ['relu_blob24']
+ceil False
+model.32.m.0
+max_pool7 was added to layers
+140179883488256:max_pool_blob7 was added to blobs
+['max_pool_blob7'] ['max_pool_blob6']
+ceil False
+model.32.m.0
+max_pool8 was added to layers
+140179883488416:max_pool_blob8 was added to blobs
+['max_pool_blob8'] ['max_pool_blob7']
+ceil False
+model.32.m.0
+max_pool9 was added to layers
+140179883488736:max_pool_blob9 was added to blobs
+['max_pool_blob9'] ['max_pool_blob8']
+ceil False
+model.33.m.0
+max_pool10 was added to layers
+140179883489056:max_pool_blob10 was added to blobs
+['max_pool_blob10'] ['relu_blob24']
+ceil False
+model.33.m.0
+max_pool11 was added to layers
+140179883489536:max_pool_blob11 was added to blobs
+['max_pool_blob11'] ['max_pool_blob10']
+ceil False
+model.33.m.0
+max_pool12 was added to layers
+140179883377504:max_pool_blob12 was added to blobs
+['max_pool_blob12'] ['max_pool_blob11']
+ceil False
+model.33.m.0
+max_pool13 was added to layers
+140179883404960:max_pool_blob13 was added to blobs
+['max_pool_blob13'] ['max_pool_blob12']
+ceil False
+model.33.m.0
+max_pool14 was added to layers
+140179883420464:max_pool_blob14 was added to blobs
+['max_pool_blob14'] ['max_pool_blob13']
+ceil False
+model.33.m.0
+max_pool15 was added to layers
+140179883417984:max_pool_blob15 was added to blobs
+['max_pool_blob15'] ['max_pool_blob14']
+ceil False
+model.34
+cat5 was added to layers
+140179883418464:cat_blob5 was added to blobs
+['cat_blob5'] ['max_pool_blob15', 'max_pool_blob9', 'max_pool_blob5', 'relu_blob24']
+model.35.conv
+conv:  cat_blob5
+conv25 was added to layers
+140179883418944:conv_blob25 was added to blobs
+['conv_blob25'] ['cat_blob5']
+model.35.act
+relu25 was added to layers
+140179883419264:relu_blob25 was added to blobs
+['relu_blob25'] ['conv_blob25']
+model.36
+cat6 was added to layers
+140179883419184:cat_blob6 was added to blobs
+['cat_blob6'] ['relu_blob25', 'relu_blob23']
+model.37.conv
+conv:  cat_blob6
+conv26 was added to layers
+140179883419744:conv_blob26 was added to blobs
+['conv_blob26'] ['cat_blob6']
+model.37.act
+relu26 was added to layers
+140179883420224:relu_blob26 was added to blobs
+['relu_blob26'] ['conv_blob26']
+model.38.conv
+conv:  relu_blob26
+conv27 was added to layers
+140179883421024:conv_blob27 was added to blobs
+['conv_blob27'] ['relu_blob26']
+model.38.act
+relu27 was added to layers
+140179883421424:relu_blob27 was added to blobs
+['relu_blob27'] ['conv_blob27']
+model.39.conv
+conv_transpose1 was added to layers
+140179938746752:conv_transpose_blob1 was added to blobs
+['conv_transpose_blob1'] ['relu_blob27']
+model.39.act
+relu28 was added to layers
+140179938746672:relu_blob28 was added to blobs
+['relu_blob28'] ['conv_transpose_blob1']
+model.40.conv
+conv:  relu_blob17
+conv28 was added to layers
+140179938747392:conv_blob28 was added to blobs
+['conv_blob28'] ['relu_blob17']
+model.40.act
+relu29 was added to layers
+140179938747952:relu_blob29 was added to blobs
+['relu_blob29'] ['conv_blob28']
+model.41
+cat7 was added to layers
+140179938748352:cat_blob7 was added to blobs
+['cat_blob7'] ['relu_blob29', 'relu_blob28']
+model.42.conv
+conv:  cat_blob7
+conv29 was added to layers
+140179938748592:conv_blob29 was added to blobs
+['conv_blob29'] ['cat_blob7']
+model.42.act
+relu30 was added to layers
+140179938748912:relu_blob30 was added to blobs
+['relu_blob30'] ['conv_blob29']
+model.43.conv
+conv:  cat_blob7
+conv30 was added to layers
+140179938749392:conv_blob30 was added to blobs
+['conv_blob30'] ['cat_blob7']
+model.43.act
+relu31 was added to layers
+140179938749712:relu_blob31 was added to blobs
+['relu_blob31'] ['conv_blob30']
+model.44.conv
+conv:  relu_blob31
+conv31 was added to layers
+140179938750032:conv_blob31 was added to blobs
+['conv_blob31'] ['relu_blob31']
+model.44.act
+relu32 was added to layers
+140179883471072:relu_blob32 was added to blobs
+['relu_blob32'] ['conv_blob31']
+model.45.conv
+conv:  relu_blob32
+conv32 was added to layers
+140179883471472:conv_blob32 was added to blobs
+['conv_blob32'] ['relu_blob32']
+model.45.act
+relu33 was added to layers
+140179883471872:relu_blob33 was added to blobs
+['relu_blob33'] ['conv_blob32']
+model.46
+cat8 was added to layers
+140179883472352:cat_blob8 was added to blobs
+['cat_blob8'] ['relu_blob33', 'relu_blob32', 'relu_blob31', 'relu_blob30']
+model.47.conv
+conv:  cat_blob8
+conv33 was added to layers
+140179883472512:conv_blob33 was added to blobs
+['conv_blob33'] ['cat_blob8']
+model.47.act
+relu34 was added to layers
+140179883472832:relu_blob34 was added to blobs
+['relu_blob34'] ['conv_blob33']
+model.48.conv
+conv:  relu_blob34
+conv34 was added to layers
+140179883473312:conv_blob34 was added to blobs
+['conv_blob34'] ['relu_blob34']
+model.48.act
+relu35 was added to layers
+140179883473792:relu_blob35 was added to blobs
+['relu_blob35'] ['conv_blob34']
+model.49.conv
+conv_transpose2 was added to layers
+140179883474352:conv_transpose_blob2 was added to blobs
+['conv_transpose_blob2'] ['relu_blob35']
+model.49.act
+relu36 was added to layers
+140179883474112:relu_blob36 was added to blobs
+['relu_blob36'] ['conv_transpose_blob2']
+model.50.conv
+conv:  relu_blob12
+conv35 was added to layers
+140179883466640:conv_blob35 was added to blobs
+['conv_blob35'] ['relu_blob12']
+model.50.act
+relu37 was added to layers
+140179883463200:relu_blob37 was added to blobs
+['relu_blob37'] ['conv_blob35']
+model.51
+cat9 was added to layers
+140179883463600:cat_blob9 was added to blobs
+['cat_blob9'] ['relu_blob37', 'relu_blob36']
+model.52.conv
+conv:  cat_blob9
+conv36 was added to layers
+140179883463840:conv_blob36 was added to blobs
+['conv_blob36'] ['cat_blob9']
+model.52.act
+relu38 was added to layers
+140179883464160:relu_blob38 was added to blobs
+['relu_blob38'] ['conv_blob36']
+model.53.conv
+conv:  cat_blob9
+conv37 was added to layers
+140179883464560:conv_blob37 was added to blobs
+['conv_blob37'] ['cat_blob9']
+model.53.act
+relu39 was added to layers
+140179883464960:relu_blob39 was added to blobs
+['relu_blob39'] ['conv_blob37']
+model.54.conv
+conv:  relu_blob39
+conv38 was added to layers
+140179883465440:conv_blob38 was added to blobs
+['conv_blob38'] ['relu_blob39']
+model.54.act
+relu40 was added to layers
+140179883465840:relu_blob40 was added to blobs
+['relu_blob40'] ['conv_blob38']
+model.55.conv
+conv:  relu_blob40
+conv39 was added to layers
+140179883466240:conv_blob39 was added to blobs
+['conv_blob39'] ['relu_blob40']
+model.55.act
+relu41 was added to layers
+140179883487376:relu_blob41 was added to blobs
+['relu_blob41'] ['conv_blob39']
+model.56
+cat10 was added to layers
+140179883487856:cat_blob10 was added to blobs
+['cat_blob10'] ['relu_blob41', 'relu_blob40', 'relu_blob39', 'relu_blob38']
+model.57.conv
+conv:  cat_blob10
+conv40 was added to layers
+140179883488176:conv_blob40 was added to blobs
+['conv_blob40'] ['cat_blob10']
+model.57.act
+relu42 was added to layers
+140179883488576:relu_blob42 was added to blobs
+['relu_blob42'] ['conv_blob40']
+model.58.conv
+conv:  relu_blob42
+conv41 was added to layers
+140179883488976:conv_blob41 was added to blobs
+['conv_blob41'] ['relu_blob42']
+model.58.act
+relu43 was added to layers
+140179883489456:relu_blob43 was added to blobs
+['relu_blob43'] ['conv_blob41']
+model.59
+cat11 was added to layers
+140179883489776:cat_blob11 was added to blobs
+['cat_blob11'] ['relu_blob43', 'relu_blob34']
+model.60.conv
+conv:  cat_blob11
+conv42 was added to layers
+140179883490016:conv_blob42 was added to blobs
+['conv_blob42'] ['cat_blob11']
+model.60.act
+relu44 was added to layers
+140179883490336:relu_blob44 was added to blobs
+['relu_blob44'] ['conv_blob42']
+model.61.conv
+conv:  cat_blob11
+conv43 was added to layers
+140179883490656:conv_blob43 was added to blobs
+['conv_blob43'] ['cat_blob11']
+model.61.act
+relu45 was added to layers
+140179883490976:relu_blob45 was added to blobs
+['relu_blob45'] ['conv_blob43']
+model.62.conv
+conv:  relu_blob45
+conv44 was added to layers
+140179883491392:conv_blob44 was added to blobs
+['conv_blob44'] ['relu_blob45']
+model.62.act
+relu46 was added to layers
+140179883491712:relu_blob46 was added to blobs
+['relu_blob46'] ['conv_blob44']
+model.63.conv
+conv:  relu_blob46
+conv45 was added to layers
+140179883492032:conv_blob45 was added to blobs
+['conv_blob45'] ['relu_blob46']
+model.63.act
+relu47 was added to layers
+140179883492352:relu_blob47 was added to blobs
+['relu_blob47'] ['conv_blob45']
+model.64
+cat12 was added to layers
+140179883492672:cat_blob12 was added to blobs
+['cat_blob12'] ['relu_blob47', 'relu_blob46', 'relu_blob45', 'relu_blob44']
+model.65.conv
+conv:  cat_blob12
+conv46 was added to layers
+140179883492912:conv_blob46 was added to blobs
+['conv_blob46'] ['cat_blob12']
+model.65.act
+relu48 was added to layers
+140179883493232:relu_blob48 was added to blobs
+['relu_blob48'] ['conv_blob46']
+model.66.conv
+conv:  relu_blob48
+conv47 was added to layers
+140179883493552:conv_blob47 was added to blobs
+['conv_blob47'] ['relu_blob48']
+model.66.act
+relu49 was added to layers
+140179883493872:relu_blob49 was added to blobs
+['relu_blob49'] ['conv_blob47']
+model.67.m
+conv:  relu_blob49
+conv48 was added to layers
+140179883405200:conv_blob48 was added to blobs
+['conv_blob48'] ['relu_blob49']
+Transform Completed

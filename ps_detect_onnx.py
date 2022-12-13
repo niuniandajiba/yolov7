@@ -30,7 +30,7 @@ def main(img_dir, fname, session, inMean, inScale, outPath):
     img_bgr = cv2.imread(img_path)
     # print(img_bgr.shape)
     if img_bgr.shape[1]>1000:
-        img_bgr = img_bgr[:, 120:1100, :]
+        img_bgr = img_bgr[:, 160:1120, :]
     img_bgr = cv2.resize(img_bgr, inputSize)
     tensor = preprocess(img_bgr[:, :, ::-1], inMean, inScale)
     
@@ -69,6 +69,11 @@ def main(img_dir, fname, session, inMean, inScale, outPath):
         p1 = (int(slot[i][0]+deltax), int(slot[i][1]+deltay))
         p2 = (int(slot[i][0]-deltax), int(slot[i][1]-deltay))
         
+        # dist_p1_p2 = math.dist(p1, p2)
+        # if dist_p1_p2 > 150:
+        #     len2 = 96
+        # else:
+        #     len2 = 192
         len2 = 30
         deltax = len2*slot[i][4]
         deltay = len2*slot[i][5]
@@ -82,6 +87,7 @@ def main(img_dir, fname, session, inMean, inScale, outPath):
         cv2.line(img_bgr, p1, p2, cls_color, thickness=2)
         cv2.line(img_bgr, p1, p3, cls_color, thickness=2)
         cv2.line(img_bgr, p2, p4, cls_color, thickness=2)
+        # cv2.line(img_bgr, p3, p4, cls_color, thickness=2)
         cv2.putText(img_bgr, text, p1, cv2.FONT_HERSHEY_SIMPLEX,\
             fontScale=0.5, color=cls_color, thickness=1,\
             lineType=cv2.LINE_AA)
@@ -89,19 +95,20 @@ def main(img_dir, fname, session, inMean, inScale, outPath):
     cv2.imwrite(img_outputName, img_bgr)
 
 if __name__ == '__main__':
-    img_path = 'avm2d_7.jpg'
-    inputSize = (640, 640)
+    img_path = '20220919005628_4555.jpg'
+    inputSize = (384, 384)
     inMean = (0, 0, 0)
     inScale = (0.00392157, 0.00392157, 0.00392157)
-    model_path = './onnx/yolov7_n_ps_32st_grid_sim.onnx'
+    model_path = './onnx/yolov7_n_tda2_ps_16st_20221128_grid_sim.onnx'
     session = onnxruntime.InferenceSession(model_path)
-    img_dir = '/rd22857/dataset/parkingslot_lh/images_test'
+    # img_dir = '/rd22857/dataset/parkingslot_lh/images_test/1'
+    img_dir = '/dataset/parking_slot_lh/raw/images/20221110131516'
 
-    if 1: # Test
+    if 0: # Test
         main('./', img_path, session, inMean, inScale, './output_single')
 
     if 1:# batch test
-        outPath = './output_test_n'
+        outPath = './output_test_20221110131516'
         check_dir(outPath)
         for fname in os.listdir(img_dir):
             if not os.path.exists(outPath):

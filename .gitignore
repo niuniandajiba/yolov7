@@ -6,3 +6,5 @@ runs/**
 dataset/**
 onnx/**
 *.avi
+*.prototxt
+*.caffemodel

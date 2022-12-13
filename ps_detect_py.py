@@ -6,14 +6,14 @@ import math
 from models.experimental import attempt_load
 
 def main():
-    video_path = '/opt_disk1/share/Dataset/parking_slot_lh/raw/videos/20220919/2019-10-31    01-27-45-环视.h264'
+    video_path = '/opt_disk1/share/Dataset/parking_slot_lh/raw/videos/20220919/2019-10-31    01-02-44-环视.h264'
     Videocapture = cv2.VideoCapture(video_path)
-    outPath = './out2.avi'
+    outPath = './out20220919-010244-nano3123.avi'
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     out = cv2.VideoWriter(outPath, fourcc, 25.0, (1280, 960))
 
     device = torch.device('cuda:0')#('cuda:0' if torch.cuda.is_available() else 'cpu')
-    model = torch.jit.load('./out_models/tiny_st32_pic953_torchscript_cuda0.pt', map_location=device).to(device)
+    model = torch.jit.load('./out_models/nano_st32_pic3123_torchscript_cuda0.pt', map_location=device).to(device)
     # model.model[-1].export = True
 
     model.eval()
@@ -30,7 +30,7 @@ def main():
             # print(len(pred))
             pred = pred[0]
             # pred = pred.sigmoid()
-            pred = pred.cpu().numpy()[0]
+            pred = pred.cpu().numpy()
             # print(pred.shape)
             pred = pred[pred[:, 7] > 0.5]
             pred = sorted(pred, key=lambda pred: pred[7], reverse=True)

@@ -11,7 +11,7 @@ from models.experimental import *
 from utils.autoanchor import check_anchor_order
 from utils.general import make_divisible, check_file, set_logging
 from utils.torch_utils import time_synchronized, fuse_conv_and_bn, model_info, scale_img, initialize_weights, \
-    select_device, copy_attr
+    select_device, copy_attr, fuse_deconv_and_bn
 from utils.loss import SigmoidBin
 
 try:
@@ -23,6 +23,7 @@ except ImportError:
 class Detect(nn.Module):
     stride = None  # strides computed during build
     export = False  # onnx export
+    tda4 = False
 
     def __init__(self, nc=80, anchors=(), ch=()):  # detection layer
         super(Detect, self).__init__()
@@ -40,6 +41,11 @@ class Detect(nn.Module):
         # x = x.copy()  # for profiling
         z = []  # inference output
         self.training |= self.export
+        if self.tda4:
+            for i in range(self.nl):
+                x[i] = self.m[i](x[i])
+                bs, _, ny, nx = x[i].shape
+            return x
         for i in range(self.nl):
             x[i] = self.m[i](x[i])  # conv
             bs, _, ny, nx = x[i].shape  # x(bs,255,20,20) to x(bs,3,20,20,85)
@@ -338,6 +344,7 @@ class DetectSlot(nn.Module):
     stride = None
     export = False
     tda4 = False
+    no_sig = False
 
     def __init__(self, nc=2, anchors=(), ch=()):
         super(DetectSlot, self).__init__()
@@ -359,6 +366,8 @@ class DetectSlot(nn.Module):
         # only 1 layer 64x
         x = self.m(x)
         bs, _, ny, nx = x.shape
+        if self.no_sig:
+            return x
         if self.tda4:
             # bn = nn.BatchNorm2d(20, affine=False, track_running_stats=False)
             # self.grid = self._make_grid_2(nx, ny).to(x.device)
@@ -389,6 +398,10 @@ class DetectSlot(nn.Module):
 
             y = x.sigmoid()
             # y[..., 0:2] 
+            # print(y.device)
+            # print(self.grid.device)
+            # print(self.stride.device)
+            self.stride = torch.tensor([16.0]).to(x.device)
             p = (y[..., 0:2] * 2. - 0.5 + self.grid) * self.stride
             # y[..., 2:6] 
             ang= y[..., 2:6] * 2. - 1.0
@@ -678,6 +691,10 @@ class Model(nn.Module):
                 m.conv = fuse_conv_and_bn(m.conv, m.bn)  # update conv
                 delattr(m, 'bn')  # remove batchnorm
                 m.forward = m.fuseforward  # update forward
+            elif type(m) is DeConv and hasattr(m, 'bn'):
+                m.conv = fuse_deconv_and_bn(m.conv, m.bn)
+                delattr(m, 'bn')
+                m.forward = m.fuseforward
         self.info()
         return self
 
@@ -731,7 +748,7 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
                  RepResX, RepResXCSPA, RepResXCSPB, RepResXCSPC, 
                  Ghost, GhostCSPA, GhostCSPB, GhostCSPC,
                  SwinTransformerBlock, STCSPA, STCSPB, STCSPC,
-                 SwinTransformer2Block, ST2CSPA, ST2CSPB, ST2CSPC, C3]:
+                 SwinTransformer2Block, ST2CSPA, ST2CSPB, ST2CSPC, C3, DeConv]:
             c1, c2 = ch[f], args[0]
             if c2 != no:  # if not output
                 c2 = make_divisible(c2 * gw, 8)

@@ -200,6 +200,28 @@ def fuse_conv_and_bn(conv, bn):
 
     return fusedconv
 
+def fuse_deconv_and_bn(deconv, bn):
+    # Fuse deconvolution and batchnorm layers https://tehnokv.com/posts/fusing-batchnorm-and-conv/
+    fuseddeconv = nn.ConvTranspose2d(deconv.in_channels,
+                                     deconv.out_channels,
+                                     kernel_size=deconv.kernel_size,
+                                     stride=deconv.stride,
+                                     padding=deconv.padding,
+                                     groups=deconv.groups,
+                                     bias=True).requires_grad_(False).to(deconv.weight.device)
+
+    # prepare filters
+    w_deconv = deconv.weight.clone().view(deconv.out_channels, -1)
+    w_bn = torch.diag(bn.weight.div(torch.sqrt(bn.eps + bn.running_var)))
+    fuseddeconv.weight.copy_(torch.mm(w_bn, w_deconv).view(fuseddeconv.weight.shape))
+
+    # prepare spatial bias
+    b_deconv = torch.zeros(deconv.weight.size(0), device=deconv.weight.device) if deconv.bias is None else deconv.bias
+    b_bn = bn.bias - bn.weight.mul(bn.running_mean).div(torch.sqrt(bn.running_var + bn.eps))
+    fuseddeconv.bias.copy_(torch.mm(w_bn, b_deconv.reshape(-1, 1)).reshape(-1) + b_bn)
+
+    return fuseddeconv
+
 
 def model_info(model, verbose=False, img_size=640):
     # Model information. img_size may be int or list, i.e. img_size=640 or img_size=[640, 320]
