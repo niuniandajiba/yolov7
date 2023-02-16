@@ -10,7 +10,15 @@
 
 ### YOLOP
 
+#### 原模型存在的问题：
 
+- backbone中同yolov5一样，需要修改FocusLayer, SiLU, SPP(spatial pyramid pooling)这三个地方。
+- 分割部分的损失函数用了BCELossWithLogistic,但是分割这条支线最后又加了一个Sigmoid,这会导致算损失的时候过两个Sigmoid，但看demo不知道为什么这样跑出来的能用。另外再退一步说，分割损失其实不应该用BCELoss。
+- 三任务的开关做的有问题，只能同时训三任务或单任务，没有留下只训练两个任务的接口，如果想这样做，修改时需要动的地方很多，另外warmup时学习率设置有问题，推理统计时间的模块有问题。
+- 分割和目标检测的类别接口没有留好，如果都想训练多类别会有困难，而且尤其在目标检测支线，多类别会让检测准确率下降很多，原因未知。
+- 多类别在tidl中转换时，可以通过增加“outDataNamesList = "drive_area_seg"”来增加输出支线。
+- 两个支线都暂时只训练一类（除背景类）的情况下，准确率尚可，但是转换模型量化时掉点极其严重，后经过在模型中添加weight_decay解决量化掉点问题，但是训练时准确率又大幅下降，个人猜测是因为损失函数没有选好或者损失之间的权重没有权衡好。
+- 最后这个精确度存疑的模型的算力要求和原先俩模型加起来差不多。。。所以暂时放弃这个模型。（虽然算力要求一样，但是可能会快一点，未测试实际运行时间）
 
 ## 三、pc emulation build
 
@@ -46,8 +54,6 @@
 原因：/tda4/sdk7.01/ti-processor-sdk-rtos-j721e-evm-07_01_00_11/vision_apps/apps/dl_demos/app_tidl_od/app_display_module.c:68中，判断条件`&&(displayObj->display_option == 1)`让返回的status=VX_FAILURE,程序终止。
 
 ## 四、停车位检测模型
-
-
 
 ### 8.04
 
