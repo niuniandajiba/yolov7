@@ -1,5 +1,5 @@
 path: /rd22857/dataset/parkingslot_lh/
-train: /rd22857/dataset/parkingslot_lh/train20221212.txt
+train: /rd22857/dataset/parkingslot_lh/train_20230112.txt
 # val: /jiliod/val_images.txt
 # test:  TODO 
 

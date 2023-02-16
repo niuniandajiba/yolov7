@@ -12,10 +12,67 @@ from tqdm import tqdm
 from models.experimental import attempt_load
 from utils.datasets import create_dataloader
 from utils.general import coco80_to_coco91_class, check_dataset, check_file, check_img_size, check_requirements, \
-    box_iou, non_max_suppression, scale_coords, xyxy2xywh, xywh2xyxy, set_logging, increment_path, colorstr
+    box_iou, non_max_suppression, scale_coords, xyxy2xywh, xywh2xyxy, set_logging, increment_path, colorstr, \
+    non_max_suppression_ps
 from utils.metrics import ap_per_class, ConfusionMatrix
 from utils.plots import plot_images, output_to_target, plot_study_txt
 from utils.torch_utils import select_device, time_synchronized, TracedModel
+
+
+class AverageMetrics_PS():
+    def __init__(self):
+        self.count = 0
+        self.TP = 0
+        self.P = 1e-16
+        self.R = 1e-16
+    
+    def update(self, TP, P, R):
+        self.count += 1
+        self.TP += TP
+        self.P += P
+        self.R += R
+    
+    def getP(self):
+        return self.TP / self.P
+    
+    def getR(self):
+        return self.TP / self.R
+
+    def getF1(self):
+        P = self.getP()
+        R = self.getR()
+        return 2 * P * R / (P + R + 1e-16)
+    
+    def refresh(self):
+        self.count = 0
+        self.TP = 0
+        self.P = 1e-16
+        self.R = 1e-16
+
+
+    def match_ps(self, pred, target, dist_thres=10, rad_thres=0.25):
+        # pred: [x1, y1, x2, y2, cls, rad]
+        # target: [x1, y1, x2, y2, cls, rad]
+        if pred[4] != target[4]:
+            return False
+        if abs(pred[5] - target[5]) > rad_thres:
+            return False
+        if np.linalg.norm(pred[0:2] - target[0:2]) > dist_thres:
+            return False
+        if np.linalg.norm(pred[2:4] - target[2:4]) > dist_thres:
+            return False
+        return True
+    
+    def match_psList(self, pred, target, dist_thres=10, rad_thres=0.25):
+        target_detected = [False] * len(target)
+        for i in range(len(pred)):
+            for j in range(len(target)):
+                if target_detected[j]:
+                    continue
+                if self.match_ps(pred[i], target[j], dist_thres, rad_thres):
+                    target_detected[j] = True
+                    break
+        self.update(sum(target_detected), len(pred), len(target))
 
 
 def test(data,
@@ -383,7 +440,11 @@ def test_PS(data,
             targets[:, 2:] *= torch.Tensor([width, height, width, height]).to(device)  # to pixels
             lb = [targets[targets[:, 0] == i, 1:] for i in range(nb)] if save_hybrid else []  # for autolabelling
             t = time_synchronized()
-            out = non_max_suppression(out, conf_thres=conf_thres, iou_thres=iou_thres, labels=lb, multi_label=True)
+            # out = non_max_suppression(out, conf_thres=conf_thres, iou_thres=iou_thres, labels=lb, multi_label=True)
+            # non_max_suppression for parking slot
+            out = out[out[:, 7] > conf_thres]
+            out = non_max_suppression_ps(dist_thres=dist_thres, res0=out)
+            
             t1 += time_synchronized() - t
 
         # Statistics per image

@@ -694,6 +694,20 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
 
     return output
 
+def non_max_suppression_ps(dist_thres, res0):
+    res = sorted(res0, key=lambda x: x[7], reverse=True)
+    valid = np.ones(len(res), dtype=int)
+    slot = []
+    for idx in range(len(res)):
+        if not valid[idx]:
+            continue
+        slot.append(res[idx])
+        for j in range(idx+1, len(res)):
+            if not valid[j]:
+                continue
+            if math.dist(res[idx][0:2], res[j][0:2]) < dist_thres:
+                valid[j] = 0
+    return slot
 
 def non_max_suppression_kpt(prediction, conf_thres=0.25, iou_thres=0.45, classes=None, agnostic=False, multi_label=False,
                         labels=(), kpt_label=False, nc=None, nkpt=None):

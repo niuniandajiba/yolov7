@@ -401,7 +401,7 @@ class DetectSlot(nn.Module):
             # print(y.device)
             # print(self.grid.device)
             # print(self.stride.device)
-            self.stride = torch.tensor([16.0]).to(x.device)
+            self.stride = torch.tensor([32.0]).to(x.device)
             p = (y[..., 0:2] * 2. - 0.5 + self.grid) * self.stride
             # y[..., 2:6] 
             ang= y[..., 2:6] * 2. - 1.0

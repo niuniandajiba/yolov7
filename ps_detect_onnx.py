@@ -74,7 +74,7 @@ def main(img_dir, fname, session, inMean, inScale, outPath):
         #     len2 = 96
         # else:
         #     len2 = 192
-        len2 = 30
+        len2 = 50
         deltax = len2*slot[i][4]
         deltay = len2*slot[i][5]
         p3 = (int(p1[0]+deltax), int(p1[1]+deltay))
@@ -96,10 +96,10 @@ def main(img_dir, fname, session, inMean, inScale, outPath):
 
 if __name__ == '__main__':
     img_path = '20220919005628_4555.jpg'
-    inputSize = (384, 384)
+    inputSize = (640, 640)
     inMean = (0, 0, 0)
     inScale = (0.00392157, 0.00392157, 0.00392157)
-    model_path = './onnx/yolov7_n_tda2_ps_16st_20221128_grid_sim.onnx'
+    model_path = './onnx/yolov7_n2_tda2_ps_32st_20230104_grid_sim.onnx'
     session = onnxruntime.InferenceSession(model_path)
     # img_dir = '/rd22857/dataset/parkingslot_lh/images_test/1'
     img_dir = '/dataset/parking_slot_lh/raw/images/20221110131516'

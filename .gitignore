@@ -4,7 +4,6 @@ runs/**
 *.pt
 *.jpg
 dataset/**
-onnx/**
 *.avi
 *.prototxt
 *.caffemodel
